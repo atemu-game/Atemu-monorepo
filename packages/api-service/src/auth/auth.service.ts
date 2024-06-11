@@ -22,12 +22,14 @@ import {
 import { JwtPayload } from '@app/shared/modules/jwt/jwt.dto';
 import { Web3Service } from '@app/shared/modules';
 import { ABIS } from '@app/shared/constants';
+import { WalletService } from '../wallet/wallet.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
+    private readonly walletService: WalletService,
   ) {
     this.web3Service = new Web3Service();
   }
@@ -94,11 +96,16 @@ export class AuthService {
       sub: formattedContractAddress(address),
       role: [],
     };
+
     const data = await this.verifySignature(address, signature, rpc);
+
     if (!data) {
       throw new Error('Signature is not valid');
     }
-
+    // const user = await this.userService.getUser(address);
+    // if (!user.mappingAddress) {
+    //   await this.walletService.getOrCreateWalletByEth(address);
+    // }
     const token = await this.generateToken(accessPayload);
     await this.userService.updateRandomNonce(address);
     return {

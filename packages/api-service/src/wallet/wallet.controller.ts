@@ -77,7 +77,7 @@ export class WalletController {
     try {
       const { feeType } = createWalletDto;
       if (feeType == TokenType.ETH) {
-        const data = await this.walletService.createWalletByEth(user.sub);
+        const data = await this.walletService.getOrCreateWalletByEth(user.sub);
         return new BaseResult({
           success: true,
           data,

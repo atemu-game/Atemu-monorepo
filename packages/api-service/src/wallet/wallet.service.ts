@@ -30,7 +30,7 @@ export class WalletService {
     private readonly usersModel: Model<UserDocument>,
     private readonly userService: UserService,
   ) {}
-  async createWalletByEth(creatorAddress: string) {
+  async getOrCreateWalletByEth(creatorAddress: string) {
     const userExist = await this.userService.getUser(creatorAddress);
 
     const provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
