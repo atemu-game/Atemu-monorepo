@@ -43,7 +43,7 @@ export class Users extends BaseSchema {
   isVerified?: boolean;
 
   @Prop({ default: false })
-  isCreatorAccount?: boolean;
+  isPayerAccount?: boolean;
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Users' })
   mappingAddress?: UserDocument;

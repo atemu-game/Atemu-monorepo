@@ -6,10 +6,12 @@ import { UsersModule } from '../user/user.module';
 import { UserSchema, Users } from '@app/shared/models';
 import { JwtModule } from '@nestjs/jwt';
 import configuration from '@app/shared/configuration';
+import { WalletModule } from '../wallet/wallet.module';
 
 @Module({
   imports: [
     UsersModule,
+    WalletModule,
     MongooseModule.forFeature([{ name: Users.name, schema: UserSchema }]),
     JwtModule.registerAsync({
       useFactory: async () => ({

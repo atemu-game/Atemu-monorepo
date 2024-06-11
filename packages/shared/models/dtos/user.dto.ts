@@ -55,5 +55,5 @@ export class UserDto {
   roles: string[];
 
   @IsBoolean()
-  isCreatorAccount?: boolean;
+  isPayerAccount?: boolean;
 }
