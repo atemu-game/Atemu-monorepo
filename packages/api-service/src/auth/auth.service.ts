@@ -102,10 +102,12 @@ export class AuthService {
     if (!data) {
       throw new Error('Signature is not valid');
     }
-    // const user = await this.userService.getUser(address);
-    // if (!user.mappingAddress) {
-    //   await this.walletService.getOrCreateWalletByEth(address);
-    // }
+    const user = await this.userService.getUser(address);
+    if (!user.mappingAddress) {
+      await this.walletService.getOrCreateWalletByEth(
+        formattedContractAddress(address),
+      );
+    }
     const token = await this.generateToken(accessPayload);
     await this.userService.updateRandomNonce(address);
     return {

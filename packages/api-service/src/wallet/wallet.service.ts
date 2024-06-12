@@ -43,6 +43,12 @@ export class WalletService {
 
       const payerAddress = userExist.mappingAddress.address;
 
+      console.log(
+        'Descrypt',
+        decryptData(
+          'OTMyMDdkNDNlNWFjMGEzNDBlYTljMzFlOTE2ZmFkYjcwMzMwMzM0MmVlMmUxZGI3MzRlYWM2MGY1MTAxMTgxM2Q2YzEyZDM2OTM0YTEyMGY5MzJiYjYwNDEzNjM2OGMzYTM2M2I3ZDVlM2Y4NjkyMDg2Mjc2NzExNmNkYzIwMTFkNA==',
+        ),
+      );
       const decodePrivateKey = decryptData(userExist.mappingAddress.privateKey);
 
       const starkKeyPubAX = ec.starkCurve.getStarkKey(decodePrivateKey);
@@ -62,6 +68,7 @@ export class WalletService {
         creatorAddress: userExist.address,
         feeType: TokenType.ETH,
         feeDeploy: parseFloat(formatBalance(dataFeeDeploy.feeDeploy, 18)),
+        privateKey: decodePrivateKey,
       };
     }
 
@@ -96,6 +103,7 @@ export class WalletService {
     const newPayer = await this.usersModel.create(newUser);
     newPayer.save();
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     await this.usersModel.findOneAndUpdate(
       {
         address: creatorAddress,
@@ -109,6 +117,7 @@ export class WalletService {
         new: true,
       },
     );
+
     const dataFeeDeploy = await this.calculateFeeDeployAccount(
       accountAX,
       AXConstructorCallData,
@@ -117,6 +126,7 @@ export class WalletService {
     return {
       payerAddress: newPayer.address,
       creatorAddress: userExist.address,
+      privateKey: privateKeyAX,
       feeType: TokenType.ETH,
       feeDeploy: parseFloat(formatBalance(dataFeeDeploy.feeDeploy, 18)),
     };

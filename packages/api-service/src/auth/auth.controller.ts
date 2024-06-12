@@ -27,7 +27,7 @@ export class AuthController {
     private readonly userService: UserService,
   ) {}
 
-  @Get('/get-nonce')
+  @Get('/getNonce')
   @ApiOperation({
     summary: 'Get SignMessage API',
     description: 'Use this API to get the sign message for the user.',

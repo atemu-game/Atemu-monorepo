@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode, Get } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, Get, Req } from '@nestjs/common';
 import {
   ApiTags,
   ApiExtraModels,
@@ -25,32 +25,15 @@ export class WalletController {
   constructor(private readonly walletService: WalletService) {}
 
   @JWT()
-  @Post('/create')
+  @Get('/getOrCreateWallet')
   @HttpCode(200)
   @ApiOperation({
-    summary: 'Create New Private Wallet From User Address',
+    summary: 'Get Or Create Private Wallet From User Address',
     description:
       'Utilize this API to enable users to generate a wallet directly within our marketplace when needed to a function',
   })
   @ApiOkResponse({
-    schema: {
-      allOf: [
-        {
-          $ref: getSchemaPath(BaseResult),
-        },
-        {
-          properties: {
-            data: {
-              allOf: [
-                {
-                  $ref: getSchemaPath(CreateWalletResDTO),
-                },
-              ],
-            },
-          },
-        },
-      ],
-    },
+    schema: {},
   })
   @ApiInternalServerErrorResponse({
     description: '<b>Internal server error</b>',
@@ -70,25 +53,13 @@ export class WalletController {
       ],
     },
   })
-  async createWallet(
-    @Body() createWalletDto: CreateWalletReqDTO,
-    @User() user: iInfoToken,
-  ) {
+  async getOrCreateWallet(@Req() req: Request, @User() user: iInfoToken) {
     try {
-      const { feeType } = createWalletDto;
-      if (feeType == TokenType.ETH) {
-        const data = await this.walletService.getOrCreateWalletByEth(user.sub);
-        return new BaseResult({
-          success: true,
-          data,
-        });
-      }
-      // Deploy Wallet By STRK
-      // const data = await this.walletService.createWalletBySTRK(user.sub);
-      // return new BaseResult({
-      //   success: true,
-      //   data,
-      // });
+      const data = await this.walletService.getOrCreateWalletByEth(user.sub);
+      return new BaseResult({
+        success: true,
+        data,
+      });
     } catch (error) {
       return new BaseResult({
         success: false,
@@ -159,7 +130,7 @@ export class WalletController {
   }
 
   @JWT()
-  @Get('get-balance-payer')
+  @Get('getBalancePayer')
   @ApiOperation({
     summary: 'Get Balance Wallet Creator  From User Address',
     description:
@@ -254,16 +225,6 @@ export class WalletController {
           success: true,
           data,
         });
-        // } else if (withdrawDto.tokenType === TokenType.STRK) {
-        //   const data = await this.walletService.withDrawStrk(
-        //     user.sub,
-        //     withdrawDto.reciverAddress,
-        //     withdrawDto.amount,
-        //   );
-        //   return new BaseResult({
-        //     success: true,
-        //     data,
-        //   });
       }
     } catch (error) {
       return new BaseResult({

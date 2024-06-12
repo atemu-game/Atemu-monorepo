@@ -47,7 +47,8 @@ export class Users extends BaseSchema {
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Users' })
   mappingAddress?: UserDocument;
-
+  @Prop()
+  creator?: string;
   @Prop()
   roles: string[];
 }
