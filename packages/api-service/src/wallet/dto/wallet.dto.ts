@@ -27,3 +27,18 @@ export class WidthDrawDTO {
   amount: number;
   tokenType: TokenType;
 }
+
+export class RspWalletDTO {
+  @ApiProperty()
+  payerAddress: string;
+  @ApiProperty()
+  creatorAddress: string;
+  @ApiProperty()
+  feeType: TokenType;
+  @ApiProperty()
+  feeDeploy: number;
+  @ApiProperty()
+  privateKey: string;
+  @ApiProperty()
+  deployHash?: string;
+}

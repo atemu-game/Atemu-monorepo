@@ -35,20 +35,8 @@ export class WalletService {
 
     const provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
     if (userExist.mappingAddress) {
-      if (userExist.mappingAddress.deployHash) {
-        return {
-          message: `User Address argentx already deploy at: ${userExist.mappingAddress.deployHash}`,
-        };
-      }
-
       const payerAddress = userExist.mappingAddress.address;
 
-      console.log(
-        'Descrypt',
-        decryptData(
-          'OTMyMDdkNDNlNWFjMGEzNDBlYTljMzFlOTE2ZmFkYjcwMzMwMzM0MmVlMmUxZGI3MzRlYWM2MGY1MTAxMTgxM2Q2YzEyZDM2OTM0YTEyMGY5MzJiYjYwNDEzNjM2OGMzYTM2M2I3ZDVlM2Y4NjkyMDg2Mjc2NzExNmNkYzIwMTFkNA==',
-        ),
-      );
       const decodePrivateKey = decryptData(userExist.mappingAddress.privateKey);
 
       const starkKeyPubAX = ec.starkCurve.getStarkKey(decodePrivateKey);
@@ -69,6 +57,7 @@ export class WalletService {
         feeType: TokenType.ETH,
         feeDeploy: parseFloat(formatBalance(dataFeeDeploy.feeDeploy, 18)),
         privateKey: decodePrivateKey,
+        deployHash: userExist.mappingAddress.deployHash,
       };
     }
 

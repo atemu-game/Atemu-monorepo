@@ -12,6 +12,7 @@ import { JWT, User } from '@app/shared/modules';
 import {
   CreateWalletReqDTO,
   CreateWalletResDTO,
+  RspWalletDTO,
   WidthDrawDTO,
 } from './dto/wallet.dto';
 import { BaseResult } from '@app/shared/types';
@@ -53,18 +54,21 @@ export class WalletController {
       ],
     },
   })
-  async getOrCreateWallet(@Req() req: Request, @User() user: iInfoToken) {
+  async getOrCreateWallet(
+    @Req() req: Request,
+    @User() user: iInfoToken,
+  ): Promise<BaseResult<RspWalletDTO>> {
     try {
       const data = await this.walletService.getOrCreateWalletByEth(user.sub);
-      return new BaseResult({
+      return {
         success: true,
-        data,
-      });
+        data: data,
+      };
     } catch (error) {
-      return new BaseResult({
+      return {
         success: false,
         error: error.message,
-      });
+      };
     }
   }
 

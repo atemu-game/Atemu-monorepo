@@ -1,0 +1,346 @@
+[
+  {
+    "type": "impl",
+    "name": "PointImpl",
+    "interface_name": "atemu::interfaces::point::IPointPool"
+  },
+  {
+    "type": "enum",
+    "name": "core::bool",
+    "variants": [
+      {
+        "name": "False",
+        "type": "()"
+      },
+      {
+        "name": "True",
+        "type": "()"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "atemu::interfaces::point::IPointPool",
+    "items": [
+      {
+        "type": "function",
+        "name": "addPoint",
+        "inputs": [
+          {
+            "name": "receiver",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "amount",
+            "type": "core::integer::u128"
+          },
+          {
+            "name": "timestamp",
+            "type": "core::integer::u64"
+          },
+          {
+            "name": "proof",
+            "type": "core::array::Array::<core::felt252>"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "addPointFromOtherContract",
+        "inputs": [
+          {
+            "name": "receiver",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "amount",
+            "type": "core::integer::u128"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "setPermission",
+        "inputs": [
+          {
+            "name": "address",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "isAllowed",
+            "type": "core::bool"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "setValidator",
+        "inputs": [
+          {
+            "name": "newValidator",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "getUserPoint",
+        "inputs": [
+          {
+            "name": "address",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u128"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "getValidator",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "impl",
+    "name": "OwnableImpl",
+    "interface_name": "openzeppelin::access::ownable::interface::IOwnable"
+  },
+  {
+    "type": "interface",
+    "name": "openzeppelin::access::ownable::interface::IOwnable",
+    "items": [
+      {
+        "type": "function",
+        "name": "owner",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "transfer_ownership",
+        "inputs": [
+          {
+            "name": "new_owner",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "renounce_ownership",
+        "inputs": [],
+        "outputs": [],
+        "state_mutability": "external"
+      }
+    ]
+  },
+  {
+    "type": "impl",
+    "name": "PausableImpl",
+    "interface_name": "openzeppelin::security::interface::IPausable"
+  },
+  {
+    "type": "interface",
+    "name": "openzeppelin::security::interface::IPausable",
+    "items": [
+      {
+        "type": "function",
+        "name": "is_paused",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::bool"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "constructor",
+    "name": "constructor",
+    "inputs": [
+      {
+        "name": "owner",
+        "type": "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        "name": "validator",
+        "type": "core::starknet::contract_address::ContractAddress"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "atemu::point::point::Point::AddPoint",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "user",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
+      },
+      {
+        "name": "point",
+        "type": "core::integer::u128",
+        "kind": "data"
+      },
+      {
+        "name": "timestamp",
+        "type": "core::integer::u64",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "openzeppelin::access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "previous_owner",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
+      },
+      {
+        "name": "new_owner",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "openzeppelin::access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "previous_owner",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
+      },
+      {
+        "name": "new_owner",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "openzeppelin::access::ownable::ownable::OwnableComponent::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "OwnershipTransferred",
+        "type": "openzeppelin::access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+        "kind": "nested"
+      },
+      {
+        "name": "OwnershipTransferStarted",
+        "type": "openzeppelin::access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+        "kind": "nested"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "openzeppelin::security::reentrancyguard::ReentrancyGuardComponent::Event",
+    "kind": "enum",
+    "variants": []
+  },
+  {
+    "type": "event",
+    "name": "openzeppelin::security::pausable::PausableComponent::Paused",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "account",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "openzeppelin::security::pausable::PausableComponent::Unpaused",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "account",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "openzeppelin::security::pausable::PausableComponent::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "Paused",
+        "type": "openzeppelin::security::pausable::PausableComponent::Paused",
+        "kind": "nested"
+      },
+      {
+        "name": "Unpaused",
+        "type": "openzeppelin::security::pausable::PausableComponent::Unpaused",
+        "kind": "nested"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "atemu::point::point::Point::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "AddPoint",
+        "type": "atemu::point::point::Point::AddPoint",
+        "kind": "nested"
+      },
+      {
+        "name": "ownableEvent",
+        "type": "openzeppelin::access::ownable::ownable::OwnableComponent::Event",
+        "kind": "flat"
+      },
+      {
+        "name": "reentrancyEvent",
+        "type": "openzeppelin::security::reentrancyguard::ReentrancyGuardComponent::Event",
+        "kind": "flat"
+      },
+      {
+        "name": "pausableEvent",
+        "type": "openzeppelin::security::pausable::PausableComponent::Event",
+        "kind": "flat"
+      }
+    ]
+  }
+]

@@ -7,6 +7,7 @@ config({ path: '../../.env' });
 export default () => ({
   DB_PATH: String(process.env.DB_PATH),
   API_PORT: Number(process.env.API_PORT) || 8088,
+  SOCKET_PORT: Number(process.env.SOCKET_PORT) || 8089,
 
   // JWT Setup
   JWT_SECRET: String(process.env.JWT_SECRET),
