@@ -7,7 +7,7 @@ config({ path: '../../.env' });
 export default () => ({
   DB_PATH: String(process.env.DB_PATH),
   API_PORT: Number(process.env.API_PORT) || 8088,
-  SOCKET_PORT: Number(process.env.SOCKET_PORT) || 8089,
+  SOCKET_PORT: Number(process.env.SOCKET_PORT) || 8000,
 
   // JWT Setup
   JWT_SECRET: String(process.env.JWT_SECRET),
@@ -20,4 +20,7 @@ export default () => ({
   // RPC - Enviroment
   RPC_URL: String(process.env.RPC_URL) || RPC_PROVIDER.TESTNET,
   CHAIN_ID: String(process.env.CHAIN_ID) || CHAIN_ID.SN_SEPOLIA,
+  // RPC - Provider
+  PRIVATE_KEY: String(process.env.PRIVATE_KEY),
+  ACCOUNT_ADDRESS: String(process.env.ACCOUNT_ADDRESS),
 });

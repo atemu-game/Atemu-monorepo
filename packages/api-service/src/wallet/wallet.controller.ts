@@ -107,24 +107,13 @@ export class WalletController {
       ],
     },
   })
-  async deployWallet(
-    @Body() walletDto: CreateWalletReqDTO,
-    @User() user: iInfoToken,
-  ) {
+  async deployWallet(@Req() req: Request, @User() user: iInfoToken) {
     try {
-      if (walletDto.feeType === TokenType.ETH) {
-        const data = await this.walletService.deployWalletByEth(user.sub);
-        return new BaseResult({
-          success: true,
-          data,
-        });
-      }
-      // Deploy By STRK
-      // const data = await this.walletService.deployWalletByStrk(user.sub);
-      // return new BaseResult({
-      //   success: true,
-      //   data,
-      // });
+      const data = await this.walletService.deployWalletByEth(user.sub);
+      return {
+        success: true,
+        data,
+      };
     } catch (error) {
       return new BaseResult({
         success: false,

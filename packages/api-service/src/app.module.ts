@@ -6,11 +6,19 @@ import { AppLoggerMiddleware } from '@app/shared/middlewares/app-logger.middlewa
 import configuration from '@app/shared/configuration';
 import { WalletModule } from './wallet/wallet.module';
 
+import { ConfigModule } from '@nestjs/config';
+import { BliztModule } from './blizt/blizt.module';
+
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+    }),
     UsersModule,
     AuthModule,
     WalletModule,
+    BliztModule,
     MongooseModule.forRoot(configuration().DB_PATH),
   ],
   controllers: [],

@@ -14,7 +14,7 @@ async function bootstrap() {
   const PORT = configuration().API_PORT;
 
   await app.listen(PORT, () => {
-    console.log(`Atemu api is running on port ${PORT}`);
+    console.log(`Atemu api service is running on port ${PORT}`);
   });
 }
 bootstrap();
