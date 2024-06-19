@@ -10,6 +10,7 @@ import {
   WebSocketGateway,
 } from '@nestjs/websockets';
 import { BliztService } from './blizt.service';
+
 @UseGuards(WsAuthGuard)
 @WebSocketGateway(configuration().SOCKET_PORT, {
   cors: {
@@ -30,15 +31,16 @@ export class BliztGateway
   }
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
+    this.bliztService.disconnectBlizt(client);
     this.clients.delete(client);
   }
-  @SubscribeMessage('startNewMint')
-  startNewMint(client: Socket, payload: any) {
+  @SubscribeMessage('startMint')
+  startMint(client: Socket, payload: any) {
     const userAddress = (client.handshake as any).user.sub;
     console.log(
       `Start Mint from client ${userAddress}: ${JSON.stringify(payload)}`,
     );
-    this.bliztService.startMinting(userAddress);
+    this.bliztService.startBlizt(client, userAddress);
   }
   @SubscribeMessage('stopMint')
   stopMint(client: Socket, payload: any) {
@@ -46,5 +48,6 @@ export class BliztGateway
     console.log(
       `Stop Mint from client ${userAddress}: ${JSON.stringify(payload)}`,
     );
+    this.bliztService.stopBlizt(client);
   }
 }
