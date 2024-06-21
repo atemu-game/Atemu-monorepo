@@ -100,7 +100,6 @@ export class BliztService {
     if (currentBalance < MINIMUN_MINTING_BALANCE) {
       console.log('Insufficient balance');
     }
-
     client.status = 'started';
     this.sendBliztStatus(client);
     while (currentBalance > 0 && client.status === 'started') {
@@ -223,15 +222,12 @@ export class BliztService {
 
   async stopBlizt(socket: Socket) {
     const client = this.sockets.find((client) => client.socket === socket);
-
     if (!client) {
       console.log('Client not exists');
     }
     if (client.status !== 'started') {
-      console.log('Mint not started ');
+      console.log('Client not Started');
     }
-    client.status = 'stopping';
-    this.sendBliztStatus(client);
     client.status = 'stopped';
     this.sendBliztStatus(client);
   }
