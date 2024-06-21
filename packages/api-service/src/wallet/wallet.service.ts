@@ -149,13 +149,15 @@ export class WalletService {
       contractAddress: payerAddress,
       addressSalt: starkKeyPubAX,
     };
+
     const balanceEth = await this.getBalanceEth(accountAX, provider);
     const deployFee = await this.calculateFeeDeployAccount(
       accountAX,
       AXConstructorCallData,
       payerAddress,
     );
-    if (Number(balanceEth) < deployFee.feeDeploy) {
+    if (balanceEth < deployFee.feeDeploy) {
+      console.log('What Wrogn');
       return {
         message: `Insufficient ETH balance to deploy argentx wallet, required ${deployFee.feeDeploy} ETH`,
       };
@@ -164,33 +166,37 @@ export class WalletService {
     const { transaction_hash, contract_address } =
       await accountAX.deployAccount(deployAccountPayload);
     await provider.waitForTransaction(transaction_hash);
-
-    const payerUpdated = await this.usersModel.findOneAndUpdate(
-      {
-        address: payerAddress,
-      },
-      {
-        $set: {
-          deployHash: transaction_hash,
+    console.log('It Not ???', transaction_hash);
+    const payerUpdated = await this.usersModel
+      .findOneAndUpdate(
+        {
+          address: payerAddress,
         },
-      },
-      {
-        new: true,
-      },
-    );
-    await this.usersModel.findOneAndUpdate(
-      {
-        address: creatorAddress,
-      },
-      {
-        $set: {
-          mappingAddress: payerUpdated,
+        {
+          $set: {
+            deployHash: transaction_hash,
+          },
         },
-      },
-      {
-        new: true,
-      },
-    );
+        {
+          new: true,
+        },
+      )
+      .exec();
+    await this.usersModel
+      .findOneAndUpdate(
+        {
+          address: creatorAddress,
+        },
+        {
+          $set: {
+            mappingAddress: payerUpdated,
+          },
+        },
+        {
+          new: true,
+        },
+      )
+      .exec();
 
     return {
       payerAddress: contract_address,
@@ -538,7 +544,7 @@ export class WalletService {
       provider,
     );
     const initialEth = await contractEth.balanceOf(accountAx.address);
-    return formatBalance(initialEth.toString(), 18);
+    return initialEth.toString();
   }
   async getBalanceStrk(accountAx: Account, provider?: Provider) {
     if (!provider) {
@@ -552,7 +558,7 @@ export class WalletService {
     );
     const initialStrk = await contractStrk.balanceOf(accountAx.address);
 
-    return formatBalance(initialStrk.toString(), 18);
+    return initialStrk.toString();
   }
 
   // async approveEthBalance(

@@ -1,7 +1,11 @@
 import { Socket } from 'socket.io';
 
 import { Injectable } from '@nestjs/common';
-import { decryptData, formattedContractAddress } from '@app/shared/utils';
+import {
+  decryptData,
+  formattedContractAddress,
+  formatBalance,
+} from '@app/shared/utils';
 import { WalletService } from '../wallet/wallet.service';
 import { UserService } from '../user/user.service';
 import {
@@ -98,15 +102,15 @@ export class BliztService {
       accountUser,
       provider,
     );
-
-    if (Number(currentBalance) < MINIMUN_MINTING_BALANCE) {
+    currentBalance = formatBalance(currentBalance, 18);
+    if (currentBalance < MINIMUN_MINTING_BALANCE) {
       console.log('Insufficient balance');
       client.status = 'balance_low';
       this.sendBliztStatus(client);
     } else {
       client.status = 'started';
       this.sendBliztStatus(client);
-      while (Number(currentBalance) > 0 && client.status === 'started') {
+      while (currentBalance > 0 && client.status === 'started') {
         try {
           const timestampSetup = (new Date().getTime() / 1e3).toFixed(0);
 
@@ -223,6 +227,10 @@ export class BliztService {
           client.point = point;
           this.sendBliztPoint(client);
           this.sendBliztStatus(client);
+          if (currentBalance < MINIMUN_MINTING_BALANCE) {
+            client.status = 'balance_low';
+            this.sendBliztStatus(client);
+          }
         } catch (error: any) {
           console.log(`Error: ${error.message}`);
         }
