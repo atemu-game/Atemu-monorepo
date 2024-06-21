@@ -35,19 +35,17 @@ export class BliztGateway
     this.clients.delete(client);
   }
   @SubscribeMessage('startMint')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   startMint(client: Socket, payload: any) {
     const userAddress = (client.handshake as any).user.sub;
-    console.log(
-      `Start Mint from client ${userAddress}: ${JSON.stringify(payload)}`,
-    );
+    console.log(`Start Mint from client ${userAddress}`);
     this.bliztService.startBlizt(client, userAddress);
   }
   @SubscribeMessage('stopMint')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   stopMint(client: Socket, payload: any) {
     const userAddress = (client.handshake as any).user.sub;
-    console.log(
-      `Stop Mint from client ${userAddress}: ${JSON.stringify(payload)}`,
-    );
+    console.log(`Stop Mint from client ${userAddress}`);
     this.bliztService.stopBlizt(client);
   }
 }

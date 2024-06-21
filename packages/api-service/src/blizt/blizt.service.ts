@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import { WsException } from '@nestjs/websockets';
+
 import { Injectable } from '@nestjs/common';
 import { decryptData, formattedContractAddress } from '@app/shared/utils';
 import { WalletService } from '../wallet/wallet.service';
@@ -60,14 +60,14 @@ export class BliztService {
   async startBlizt(socket: Socket, userAddress: string) {
     let client = this.sockets.find((client) => client.socket === socket);
     // if (client) {
-    //   throw new WsException('Client already exists');
+    //   console.log('Client already exists');
     // }
     const formatAddress = formattedContractAddress(userAddress);
     const point = await this.getUserPoint(userAddress);
 
     client = {
       socket,
-      status: 'start',
+      status: 'starting',
       point: point,
     };
 
@@ -76,7 +76,7 @@ export class BliztService {
 
     const userExist = await this.userService.getUser(formatAddress);
     if (!userExist.mappingAddress) {
-      throw new WsException('Client not have creator account');
+      console.log('Client not have creator account');
     }
 
     const payerAddress = formattedContractAddress(
@@ -98,10 +98,12 @@ export class BliztService {
       provider,
     );
     if (currentBalance < MINIMUN_MINTING_BALANCE) {
-      throw new WsException('Insufficient balance');
+      console.log('Insufficient balance');
     }
 
-    while (currentBalance > 0 && client.status === 'start') {
+    client.status = 'started';
+    this.sendBliztStatus(client);
+    while (currentBalance > 0 && client.status === 'started') {
       try {
         const timestampSetup = (new Date().getTime() / 1e3).toFixed(0);
 
@@ -221,13 +223,16 @@ export class BliztService {
 
   async stopBlizt(socket: Socket) {
     const client = this.sockets.find((client) => client.socket === socket);
+
     if (!client) {
-      throw new WsException('Client not exists');
+      console.log('Client not exists');
     }
-    if (client.status !== 'start') {
-      throw new WsException('Mint not started ');
+    if (client.status !== 'started') {
+      console.log('Mint not started ');
     }
-    client.status = 'stop';
+    client.status = 'stopping';
+    this.sendBliztStatus(client);
+    client.status = 'stopped';
     this.sendBliztStatus(client);
   }
 
