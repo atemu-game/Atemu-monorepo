@@ -20,6 +20,7 @@ import {
   RevertedTransactionReceiptResponse,
   Contract,
   cairo,
+  uint256,
 } from 'starknet';
 import { BliztEvent, BliztSatus } from './type';
 import configuration from '@app/shared/configuration';
@@ -97,125 +98,134 @@ export class BliztService {
       accountUser,
       provider,
     );
-    if (currentBalance < MINIMUN_MINTING_BALANCE) {
+
+    if (Number(currentBalance) < MINIMUN_MINTING_BALANCE) {
       console.log('Insufficient balance');
-    }
-    client.status = 'started';
-    this.sendBliztStatus(client);
-    while (currentBalance > 0 && client.status === 'started') {
-      try {
-        const timestampSetup = (new Date().getTime() / 1e3).toFixed(0);
+      client.status = 'balance_low';
+      this.sendBliztStatus(client);
+    } else {
+      client.status = 'started';
+      this.sendBliztStatus(client);
+      while (Number(currentBalance) > 0 && client.status === 'started') {
+        try {
+          const timestampSetup = (new Date().getTime() / 1e3).toFixed(0);
 
-        const typedDataValidate = {
-          types: {
-            StarkNetDomain: [
-              {
-                name: 'name',
-                type: 'felt',
-              },
-              {
-                name: 'version',
-                type: 'felt',
-              },
-              {
-                name: 'chainId',
-                type: 'felt',
-              },
-            ],
-            SetterPoint: [
-              {
-                name: 'address',
-                type: 'ContractAddress',
-              },
-              {
-                name: 'point',
-                type: 'u128',
-              },
-              {
-                name: 'timestamp',
-                type: 'u64',
-              },
-            ],
-          },
-          primaryType: 'SetterPoint',
-          domain: {
-            name: 'poolpoint',
-            version: '1',
-            chainId: shortString.encodeShortString('SN_SEPOLIA'),
-          },
-          message: {
-            address: formatAddress,
-            point: 1,
-            timestamp: timestampSetup,
-          },
-        };
-        const signature2 = await accountBlizt.signMessage(typedDataValidate);
+          const typedDataValidate = {
+            types: {
+              StarkNetDomain: [
+                {
+                  name: 'name',
+                  type: 'felt',
+                },
+                {
+                  name: 'version',
+                  type: 'felt',
+                },
+                {
+                  name: 'chainId',
+                  type: 'felt',
+                },
+              ],
+              SetterPoint: [
+                {
+                  name: 'address',
+                  type: 'ContractAddress',
+                },
+                {
+                  name: 'point',
+                  type: 'u256',
+                },
+                {
+                  name: 'timestamp',
+                  type: 'u64',
+                },
+              ],
+              u256: [
+                { name: 'low', type: 'felt' },
+                { name: 'high', type: 'felt' },
+              ],
+            },
+            primaryType: 'SetterPoint',
+            domain: {
+              name: 'poolpoint',
+              version: '1',
+              chainId: shortString.encodeShortString('SN_SEPOLIA'),
+            },
+            message: {
+              address: formatAddress,
+              point: uint256.bnToUint256(1),
+              timestamp: timestampSetup,
+            },
+          };
 
-        const formatedSignature = stark.formatSignature(signature2);
+          const signature2 = await accountBlizt.signMessage(typedDataValidate);
 
-        const { transaction_hash } = await accountUser.execute({
-          contractAddress: COMMON_CONTRACT_ADDRESS.BLIZT,
-          entrypoint: 'addPoint',
-          calldata: CallData.compile({
-            receiver: formatAddress,
-            amount: 1,
-            timestamp: timestampSetup,
-            proof: formatedSignature,
-          }),
-        });
-        const txR = await provider.waitForTransaction(transaction_hash, {
-          retryInterval: 1000,
-        });
-        currentBalance = await this.walletService.getBalanceEth(
-          accountUser,
-          provider,
-        );
+          const formatedSignature = stark.formatSignature(signature2);
 
-        txR.match({
-          success: (txR: SuccessfulTransactionReceiptResponse) => {
-            console.log('Success =', txR.transaction_hash);
-            this.sendBliztTransaction(
-              client,
-              transaction_hash,
-              'success',
-              timestampSetup,
-            );
-          },
-          rejected: (txR: RejectedTransactionReceiptResponse) => {
-            console.log('Rejected =', txR.transaction_failure_reason);
-            this.sendBliztTransaction(
-              client,
-              transaction_hash,
-              'rejected',
-              timestampSetup,
-            );
-          },
-          reverted: (txR: RevertedTransactionReceiptResponse) => {
-            console.log('Reverted =', txR.transaction_hash);
-            this.sendBliztTransaction(
-              client,
-              transaction_hash,
-              'reverted',
-              timestampSetup,
-            );
-          },
-          error: (err: Error) => {
-            console.log('An error occured =', err.message);
-            this.sendBliztTransaction(
-              client,
-              transaction_hash,
-              'error',
-              timestampSetup,
-            );
-          },
-        });
-        const point = await this.getUserPoint(formatAddress);
+          const { transaction_hash } = await accountUser.execute({
+            contractAddress: COMMON_CONTRACT_ADDRESS.BLIZT,
+            entrypoint: 'addPoint',
+            calldata: CallData.compile({
+              receiver: formatAddress,
+              amount: uint256.bnToUint256(1),
+              timestamp: timestampSetup,
+              proof: formatedSignature,
+            }),
+          });
+          const txR = await provider.waitForTransaction(transaction_hash, {
+            retryInterval: 1000,
+          });
+          currentBalance = await this.walletService.getBalanceEth(
+            accountUser,
+            provider,
+          );
 
-        client.point = point;
-        this.sendBliztPoint(client);
-        this.sendBliztStatus(client);
-      } catch (error: any) {
-        console.log(`Error: ${error.message}`);
+          txR.match({
+            success: (txR: SuccessfulTransactionReceiptResponse) => {
+              console.log('Success =', txR.transaction_hash);
+              this.sendBliztTransaction(
+                client,
+                transaction_hash,
+                'success',
+                timestampSetup,
+              );
+            },
+            rejected: (txR: RejectedTransactionReceiptResponse) => {
+              console.log('Rejected =', txR.transaction_failure_reason);
+              this.sendBliztTransaction(
+                client,
+                transaction_hash,
+                'rejected',
+                timestampSetup,
+              );
+            },
+            reverted: (txR: RevertedTransactionReceiptResponse) => {
+              console.log('Reverted =', txR.transaction_hash);
+              this.sendBliztTransaction(
+                client,
+                transaction_hash,
+                'reverted',
+                timestampSetup,
+              );
+            },
+            error: (err: Error) => {
+              console.log('An error occured =', err.message);
+              this.sendBliztTransaction(
+                client,
+                transaction_hash,
+                'error',
+                timestampSetup,
+              );
+            },
+          });
+          const point = await this.getUserPoint(formatAddress);
+
+          client.point = point;
+          this.sendBliztPoint(client);
+          this.sendBliztStatus(client);
+        } catch (error: any) {
+          console.log(`Error: ${error.message}`);
+        }
       }
     }
   }
@@ -224,9 +234,6 @@ export class BliztService {
     const client = this.sockets.find((client) => client.socket === socket);
     if (!client) {
       console.log('Client not exists');
-    }
-    if (client.status !== 'started') {
-      console.log('Client not Started');
     }
     client.status = 'stopped';
     this.sendBliztStatus(client);

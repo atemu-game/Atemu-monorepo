@@ -155,7 +155,7 @@ export class WalletService {
       AXConstructorCallData,
       payerAddress,
     );
-    if (balanceEth < deployFee.feeDeploy) {
+    if (Number(balanceEth) < deployFee.feeDeploy) {
       return {
         message: `Insufficient ETH balance to deploy argentx wallet, required ${deployFee.feeDeploy} ETH`,
       };
@@ -413,8 +413,8 @@ export class WalletService {
     const balanceStrk = await this.getBalanceStrk(accountAX, provider);
     return {
       payerAddress: payerAddress,
-      balanceEth: formatBalance(balanceEth, 18),
-      balanceStrk: formatBalance(balanceStrk, 18),
+      balanceEth: balanceEth,
+      balanceStrk: balanceStrk,
     };
   }
   async withDrawEth(
@@ -538,7 +538,7 @@ export class WalletService {
       provider,
     );
     const initialEth = await contractEth.balanceOf(accountAx.address);
-    return initialEth.toString();
+    return formatBalance(initialEth.toString(), 18);
   }
   async getBalanceStrk(accountAx: Account, provider?: Provider) {
     if (!provider) {
@@ -552,11 +552,7 @@ export class WalletService {
     );
     const initialStrk = await contractStrk.balanceOf(accountAx.address);
 
-    // Calculate future address of the ArgentX account
-    //  const balSTRK = await strkContract.call('balanceOf', [
-    //    userData.payer_address,
-    //  ]);
-    return initialStrk.toString();
+    return formatBalance(initialStrk.toString(), 18);
   }
 
   // async approveEthBalance(

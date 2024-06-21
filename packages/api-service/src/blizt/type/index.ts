@@ -1,4 +1,9 @@
-export type BliztSatus = 'starting' | 'started' | 'stopped' | 'stopping';
+export type BliztSatus =
+  | 'starting'
+  | 'started'
+  | 'stopped'
+  | 'stopping'
+  | 'balance_low';
 
 export enum BliztEvent {
   BLIZT_POINT = 'blizt-point',
