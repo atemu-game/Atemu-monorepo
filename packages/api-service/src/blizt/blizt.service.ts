@@ -64,9 +64,10 @@ export class BliztService {
 
   async startBlizt(socket: Socket, userAddress: string) {
     let client = this.sockets.find((client) => client.socket === socket);
-    // if (client) {
-    //   console.log('Client already exists');
-    // }
+    if (client && client.status == 'started') {
+      console.log('Client already exists Working');
+      return;
+    }
     const formatAddress = formattedContractAddress(userAddress);
     const point = await this.getUserPoint(userAddress);
 
@@ -227,12 +228,10 @@ export class BliztService {
           client.point = point;
           this.sendBliztPoint(client);
           this.sendBliztStatus(client);
-          if (currentBalance < MINIMUN_MINTING_BALANCE) {
-            client.status = 'balance_low';
-            this.sendBliztStatus(client);
-          }
         } catch (error: any) {
-          console.log(`Error: ${error.message}`);
+          // console.log(`Error: ${error.message}`);
+          client.status = 'balance_low';
+          this.sendBliztStatus(client);
         }
       }
     }
