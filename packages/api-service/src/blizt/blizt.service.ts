@@ -82,9 +82,9 @@ export class BliztService {
         point: point,
       };
       this.sockets.push(client);
-      this.sendBliztStatus(client);
     }
-
+    client.status = 'starting';
+    this.sendBliztStatus(client);
     const userExist = await this.userService.getUser(formatAddress);
     if (!userExist.mappingAddress) {
       throw new WsException('Client not have creator account');
@@ -107,7 +107,6 @@ export class BliztService {
     this.sendBliztStatus(client);
     while (client.status == 'started') {
       try {
-        console.log('Working', client.status);
         if (client.status !== 'started') break;
         let currentBalance = await this.walletService.getBalanceEth(
           accountUser,
