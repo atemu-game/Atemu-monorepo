@@ -103,6 +103,18 @@ export class BliztService {
       configuration().ACCOUNT_ADDRESS,
       configuration().PRIVATE_KEY,
     );
+    let currentBalance = await this.walletService.getBalanceEth(
+      accountUser,
+      provider,
+    );
+    currentBalance = formatBalance(currentBalance, 18);
+    if (currentBalance < MINIMUN_MINTING_BALANCE) {
+      console.log('Insufficient balance');
+      client.status = 'balance_low';
+      this.sendBliztStatus(client);
+      return;
+    }
+
     client.status = 'started';
     this.sendBliztStatus(client);
     while (client.status == 'started') {
