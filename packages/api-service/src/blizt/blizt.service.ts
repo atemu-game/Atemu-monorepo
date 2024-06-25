@@ -109,10 +109,10 @@ export class BliztService {
       client.status = 'balance_low';
       this.sendBliztStatus(client);
     } else {
-      client.status = 'started';
-      this.sendBliztStatus(client);
-      while (currentBalance > 0 && client.status === 'started') {
+      while (currentBalance > 0 && client.status === 'starting') {
         try {
+          client.status = 'started';
+          this.sendBliztStatus(client);
           const timestampSetup = (new Date().getTime() / 1e3).toFixed(0);
 
           const typedDataValidate = {
