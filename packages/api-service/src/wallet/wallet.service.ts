@@ -1,5 +1,5 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { TokenType, UserDocument, Users } from '@app/shared/models';
 import { Model } from 'mongoose';
 import { UserService } from '../user/user.service';
@@ -124,14 +124,12 @@ export class WalletService {
   async deployWalletByEth(creatorAddress: string) {
     const userExist = await this.userService.getUser(creatorAddress);
     if (!userExist.mappingAddress) {
-      return {
-        message: `User Address argentx not created`,
-      };
+      throw new BadRequestException(`User Address argentx not created`);
     }
     if (userExist.mappingAddress.deployHash) {
-      return {
-        message: `User Address argentx already deploy at: ${userExist.mappingAddress.deployHash}`,
-      };
+      throw new BadRequestException(
+        `User Address argentx already deploy at: ${userExist.mappingAddress.deployHash}`,
+      );
     }
     const payerAddress = userExist.mappingAddress.address;
     const decodePrivateKey = decryptData(userExist.mappingAddress.privateKey);
@@ -166,7 +164,7 @@ export class WalletService {
     const { transaction_hash, contract_address } =
       await accountAX.deployAccount(deployAccountPayload);
     await provider.waitForTransaction(transaction_hash);
-    console.log('It Not ???', transaction_hash);
+
     const payerUpdated = await this.usersModel
       .findOneAndUpdate(
         {
@@ -406,9 +404,7 @@ export class WalletService {
   async getBalancePayer(creatorAddress: string) {
     const userExist = await this.userService.getUser(creatorAddress);
     if (!userExist.mappingAddress) {
-      return {
-        message: `User Address argentx not deploy`,
-      };
+      throw new BadRequestException(`User Address argentx not deploy`);
     }
     const payerAddress = userExist.mappingAddress.address;
     const decodePrivateKey = decryptData(userExist.mappingAddress.privateKey);
@@ -417,6 +413,7 @@ export class WalletService {
 
     const balanceEth = await this.getBalanceEth(accountAX, provider);
     const balanceStrk = await this.getBalanceStrk(accountAX, provider);
+
     return {
       payerAddress: payerAddress,
       balanceEth: balanceEth,
@@ -429,26 +426,32 @@ export class WalletService {
     amount: number,
   ) {
     const userExist = await this.userService.getUser(creatorAddress);
-    if (!userExist.mappingAddress) {
-      return {
-        message: `User Address argentx not created`,
-      };
+
+    if (!userExist.mappingAddress || !userExist.mappingAddress.deployHash) {
+      // throw new BadRequestException(`User Address argentx not created`);
+      throw new BadRequestException('User Address argentx invalid ', {
+        cause: new Error(),
+        description: `User Address argentx not created or deployHash not found`,
+      });
     }
-    if (userExist.mappingAddress.deployHash) {
-      return {
-        message: `User Address argentx already deploy at: ${userExist.mappingAddress.deployHash}`,
-      };
-    }
+
     const payerAddress = userExist.mappingAddress.address;
     const decodePrivateKey = decryptData(userExist.mappingAddress.privateKey);
     const provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
     const accountAX = new Account(provider, payerAddress, decodePrivateKey);
+    const balanceEth = await this.getBalanceEth(accountAX, provider);
+    if (Number(formatBalance(balanceEth, 18)) < amount) {
+      throw new BadRequestException(
+        `Insufficient ETH balance to withdraw, Your Balance: ${formatBalance(balanceEth, 18)} ETH`,
+      );
+    }
+
     const { transaction_hash } = await accountAX.execute({
       contractAddress: COMMON_CONTRACT_ADDRESS.ETH,
       entrypoint: 'transfer',
       calldata: CallData.compile({
         recipient: reciverAddress,
-        amount: cairo.uint256(amount),
+        amount: cairo.uint256(amount * 1e18),
       }),
     });
     await provider.waitForTransaction(transaction_hash);
