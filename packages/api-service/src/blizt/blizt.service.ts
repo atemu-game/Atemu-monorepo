@@ -84,7 +84,6 @@ export class BliztService {
       this.sockets.push(client);
     }
     client.status = 'starting';
-    this.sendBliztStatus(client);
     const userExist = await this.userService.getUser(formatAddress);
     if (!userExist.mappingAddress) {
       throw new WsException('Client not have creator account');
