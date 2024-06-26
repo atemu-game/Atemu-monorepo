@@ -108,7 +108,6 @@ export class BliztService {
     );
     currentBalance = formatBalance(currentBalance, 18);
     if (currentBalance < MINIMUN_MINTING_BALANCE) {
-      console.log('Insufficient balance');
       client.status = 'balance_low';
       this.sendBliztStatus(client);
       return;

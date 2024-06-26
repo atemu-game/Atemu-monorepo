@@ -8,6 +8,9 @@ import { WalletModule } from './wallet/wallet.module';
 
 import { ConfigModule } from '@nestjs/config';
 import { BliztModule } from './blizt/blizt.module';
+import { UserconfigController } from './userconfig/userconfig.controller';
+import { UserconfigService } from './userconfig/userconfig.service';
+import { UserconfigModule } from './userconfig/userconfig.module';
 
 @Module({
   imports: [
@@ -20,9 +23,10 @@ import { BliztModule } from './blizt/blizt.module';
     WalletModule,
     BliztModule,
     MongooseModule.forRoot(configuration().DB_PATH),
+    UserconfigModule,
   ],
-  controllers: [],
-  providers: [],
+  controllers: [UserconfigController],
+  providers: [UserconfigService],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer): void {
