@@ -1,1 +1,0 @@
-export const MINIMUN_MINTING_BALANCE = 0.0000001;

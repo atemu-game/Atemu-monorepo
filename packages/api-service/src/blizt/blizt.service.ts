@@ -28,7 +28,6 @@ import {
 } from 'starknet';
 import { BliztEvent, BliztSatus } from './type';
 import configuration from '@app/shared/configuration';
-import { MINIMUN_MINTING_BALANCE } from '@app/shared/constants/setting';
 
 export type BliztParam = {
   socket: Socket;
@@ -70,7 +69,6 @@ export class BliztService {
     const formatAddress = formattedContractAddress(userAddress);
     const point = await this.getUserPoint(userAddress);
     if (client && client.status === 'stopping') {
-      console.log('RR s');
       client.status = 'stopped';
       this.sendBliztStatus(client);
       return;
@@ -102,33 +100,13 @@ export class BliztService {
       configuration().ACCOUNT_ADDRESS,
       configuration().PRIVATE_KEY,
     );
-    let currentBalance = await this.walletService.getBalanceEth(
-      accountUser,
-      provider,
-    );
-    currentBalance = formatBalance(currentBalance, 18);
-    if (currentBalance < MINIMUN_MINTING_BALANCE) {
-      client.status = 'balance_low';
-      this.sendBliztStatus(client);
-      return;
-    }
 
     client.status = 'started';
     this.sendBliztStatus(client);
     while (client.status == 'started') {
       try {
         if (client.status !== 'started') break;
-        let currentBalance = await this.walletService.getBalanceEth(
-          accountUser,
-          provider,
-        );
-        currentBalance = formatBalance(currentBalance, 18);
-        if (currentBalance < MINIMUN_MINTING_BALANCE) {
-          console.log('Insufficient balance');
-          client.status = 'balance_low';
-          this.sendBliztStatus(client);
-          break;
-        }
+
         const timestampSetup = (new Date().getTime() / 1e3).toFixed(0);
 
         const typedDataValidate = {
@@ -182,6 +160,29 @@ export class BliztService {
         const signature2 = await accountBlizt.signMessage(typedDataValidate);
 
         const formatedSignature = stark.formatSignature(signature2);
+
+        let currentBalance = await this.walletService.getBalanceEth(
+          accountUser,
+          provider,
+        );
+        currentBalance = formatBalance(currentBalance, 18);
+        const { suggestedMaxFee: estimatedFeeMint } =
+          await accountBlizt.estimateInvokeFee({
+            contractAddress: COMMON_CONTRACT_ADDRESS.BLIZT,
+            entrypoint: 'addPoint',
+            calldata: CallData.compile({
+              receiver: formatAddress,
+              amount: uint256.bnToUint256(1),
+              timestamp: timestampSetup,
+              proof: formatedSignature,
+            }),
+          });
+        if (currentBalance < formatBalance(estimatedFeeMint, 18)) {
+          console.log('Insufficient balance');
+          client.status = 'balance_low';
+          this.sendBliztStatus(client);
+          break;
+        }
 
         const { transaction_hash } = await accountUser.execute({
           contractAddress: COMMON_CONTRACT_ADDRESS.BLIZT,
