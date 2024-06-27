@@ -33,6 +33,7 @@ export type BliztParam = {
   socket: Socket;
   status: BliztSatus;
   point: number;
+  balance: number;
 };
 @Injectable()
 export class BliztService {
@@ -45,9 +46,13 @@ export class BliztService {
   private async sendBliztStatus(client: BliztParam) {
     client.socket.emit(BliztEvent.BLIZT_STATUS, client.status);
   }
+  private async sendBliztBalance(client: BliztParam) {
+    client.socket.emit(BliztEvent.BLIZT_BALANCE, client.balance);
+  }
   private async sendBliztPoint(client: BliztParam) {
     client.socket.emit(BliztEvent.BLIZT_POINT, client.point);
   }
+
   private async sendBliztTransaction(
     client: BliztParam,
     transactionHash: string,
@@ -68,20 +73,6 @@ export class BliztService {
     }
     const formatAddress = formattedContractAddress(userAddress);
     const point = await this.getUserPoint(userAddress);
-    if (client && client.status === 'stopping') {
-      client.status = 'stopped';
-      this.sendBliztStatus(client);
-      return;
-    }
-    if (!client) {
-      client = {
-        socket,
-        status: 'starting',
-        point: point,
-      };
-      this.sockets.push(client);
-    }
-    client.status = 'starting';
     const userExist = await this.userService.getUser(formatAddress);
     if (!userExist.mappingAddress) {
       throw new WsException('Client not have creator account');
@@ -94,6 +85,27 @@ export class BliztService {
     const provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
     const accountUser = new Account(provider, payerAddress, decodePrivateKey);
 
+    if (client && client.status === 'stopping') {
+      client.status = 'stopped';
+      this.sendBliztStatus(client);
+      return;
+    }
+    if (!client) {
+      let currentBalance = await this.walletService.getBalanceEth(
+        accountUser,
+        provider,
+      );
+      currentBalance = formatBalance(currentBalance, 18);
+      client = {
+        socket,
+        status: 'starting',
+        point: point,
+        balance: currentBalance,
+      };
+      this.sockets.push(client);
+    }
+    client.status = 'starting';
+
     // Now Account Blizt
     const accountBlizt = new Account(
       provider,
@@ -103,6 +115,7 @@ export class BliztService {
 
     client.status = 'started';
     this.sendBliztStatus(client);
+    this.sendBliztBalance(client);
     while (client.status == 'started') {
       try {
         if (client.status !== 'started') break;
@@ -166,6 +179,7 @@ export class BliztService {
           provider,
         );
         currentBalance = formatBalance(currentBalance, 18);
+
         const { suggestedMaxFee: estimatedFeeMint } =
           await accountBlizt.estimateInvokeFee({
             contractAddress: COMMON_CONTRACT_ADDRESS.BLIZT,
@@ -245,6 +259,7 @@ export class BliztService {
         client.point = point;
         this.sendBliztPoint(client);
         this.sendBliztStatus(client);
+        this.sendBliztBalance(client);
       } catch (error: any) {
         console.log(`Error: ${error.message}`);
       }
