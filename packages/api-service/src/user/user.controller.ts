@@ -1,5 +1,5 @@
 import { ApiTags } from '@nestjs/swagger';
-import { Controller, Get, Req } from '@nestjs/common';
+import { Controller, Get, Req, Post } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JWT, User } from '@app/shared/modules';
 
@@ -22,5 +22,26 @@ export class UsersController {
     const data = await this.userService.getUser(user.sub);
 
     return new BaseResult<UserDto>(data);
+  }
+
+  @Get('/configuration/defaultRPC')
+  async getDefaultRpc() {
+    const ListPublicRPC = [
+      'https://starknet-sepolia.public.blastapi.io',
+      'https://starknet-sepolia.public.blastapi.io/rpc/v0_7',
+      'https://starknet-sepolia.public.blastapi.io/rpc/v0_6',
+      'https://starknet-sepolia.reddio.com/rpc/v0_7',
+      'https://starknet-sepolia.reddio.com',
+    ];
+
+    return new BaseResult(ListPublicRPC);
+  }
+
+  @JWT()
+  @Post('/configuration/customRPC')
+  async setCustomRpc(@Req() req: Request, @User() user: iInfoToken) {
+    const data = await this.userService.getUser(user.sub);
+
+    return new BaseResult(data);
   }
 }

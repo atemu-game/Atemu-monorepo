@@ -8,3 +8,7 @@ export enum TokenType {
   ETH = 'ETH',
   STRK = 'STRK',
 }
+
+export enum ConfigurationKey {
+  LIST_PUBLIC_RPC = 'LIST_PUBLIC_RPC',
+}

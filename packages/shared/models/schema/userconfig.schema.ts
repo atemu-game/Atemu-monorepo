@@ -15,11 +15,11 @@ export type ConfigDocument = Document;
     },
   },
 })
-export class Config extends BaseSchema {
+export class UserConfig extends BaseSchema {
   @Prop({ unique: true })
   address: string;
   @Prop()
   rpcPublicStore: string[];
 }
 
-export const ConfigSchema = SchemaFactory.createForClass(Config);
+export const UserConfigSchema = SchemaFactory.createForClass(UserConfig);
