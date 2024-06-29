@@ -54,7 +54,7 @@ export class UserService {
       .populate('mappingAddress');
   }
 
-  async configCustomRPC(address: string, rpc: string[]) {
+  async postCustomRPC(address: string, rpc: string[]) {
     const formatAddress = formattedContractAddress(address);
     const user = await this.userModel.findOne({
       address: formatAddress,
@@ -70,6 +70,17 @@ export class UserService {
       )
       .exec();
 
+    return userRPC;
+  }
+
+  async getCustomRPC(address: string) {
+    const formatAddress = formattedContractAddress(address);
+    const userRPC = await this.userConfigModel.findOne({
+      address: formatAddress,
+    });
+    if (!userRPC) {
+      throw new BadRequestException('User not found');
+    }
     return userRPC;
   }
 }

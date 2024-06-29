@@ -27,9 +27,16 @@ export class UsersController {
 
   @JWT()
   @Post('/setting/customRPC')
-  async setCustomRpc(@Body() rpcDto: UpdateRpcDTO, @User() user: iInfoToken) {
-    const data = await this.userService.configCustomRPC(user.sub, rpcDto.rpc);
+  async postCustomRpc(@Body() rpcDto: UpdateRpcDTO, @User() user: iInfoToken) {
+    const data = await this.userService.postCustomRPC(user.sub, rpcDto.rpc);
 
+    return new BaseResult(data);
+  }
+
+  @JWT()
+  @Get('/setting/customRPC')
+  async getCustomRpc(@User() user: iInfoToken) {
+    const data = await this.userService.getCustomRPC(user.sub);
     return new BaseResult(data);
   }
 }
