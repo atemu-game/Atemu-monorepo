@@ -2,8 +2,9 @@ import { SchemaTypes } from 'mongoose';
 import { BaseSchema } from './base.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { UserDocument } from './user.schema';
-import { HistoryTxType } from '../types';
+
 import { PaymentTokenDocument } from './paymenttoken.schema';
+import { HistoryTxType } from '@app/shared/constants/setting';
 @Schema({
   timestamps: true,
 })

@@ -11,7 +11,7 @@ import { UserService } from '../user/user.service';
 import {
   ABIS,
   COMMON_CONTRACT_ADDRESS,
-  RPC_PROVIDER,
+  RpcProviderSetting,
 } from '@app/shared/constants';
 import {
   Provider,
@@ -82,7 +82,7 @@ export class BliztService {
       userExist.mappingAddress.address,
     );
     const decodePrivateKey = decryptData(userExist.mappingAddress.privateKey);
-    const provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
+    const provider = new Provider({ nodeUrl: RpcProviderSetting.TESTNET });
     const accountUser = new Account(provider, payerAddress, decodePrivateKey);
 
     if (client && client.status === 'stopping') {
@@ -284,7 +284,7 @@ export class BliztService {
     const contractBlizt = new Contract(
       ABIS.BliztABI,
       COMMON_CONTRACT_ADDRESS.BLIZT,
-      new Provider({ nodeUrl: RPC_PROVIDER.TESTNET }),
+      new Provider({ nodeUrl: RpcProviderSetting.TESTNET }),
     );
 
     const data = await contractBlizt.getUserPoint(userAddress);

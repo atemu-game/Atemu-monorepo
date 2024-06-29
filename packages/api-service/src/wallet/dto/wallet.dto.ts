@@ -1,6 +1,7 @@
 import { IsEnum } from 'class-validator';
-import { TokenType } from '@app/shared/models';
+
 import { ApiProperty } from '@nestjs/swagger';
+import { TokenType } from '@app/shared/constants/setting';
 
 export class CreateWalletReqDTO {
   @ApiProperty({

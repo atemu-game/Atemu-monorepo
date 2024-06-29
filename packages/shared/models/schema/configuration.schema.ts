@@ -1,4 +1,6 @@
+import { ChainName, ConfigurationName } from '@app/shared/constants/setting';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { IsEnum } from 'class-validator';
 import { Document } from 'mongoose';
 
 export type ConfigurationDocument = Configuration & Document;
@@ -16,10 +18,18 @@ export type ConfigurationDocument = Configuration & Document;
   },
 })
 export class Configuration {
-  @Prop({ unique: true })
-  key: string;
+  @IsEnum(ConfigurationName)
   @Prop()
-  value: string;
+  configName: ConfigurationName;
+
+  @IsEnum(ChainName)
+  @Prop()
+  chainName: ChainName;
+
+  @Prop()
+  value: string[];
 }
 
 export const ConfigurationSchema = SchemaFactory.createForClass(Configuration);
+
+ConfigurationSchema.index({ key: 1, chainKey: 1 }, { unique: true });

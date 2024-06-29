@@ -1,6 +1,6 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { TokenType, UserDocument, Users } from '@app/shared/models';
+import { UserDocument, Users } from '@app/shared/models';
 import { Model } from 'mongoose';
 import { UserService } from '../user/user.service';
 import {
@@ -18,10 +18,11 @@ import { decryptData, encryptData } from '@app/shared/utils/encode';
 import { formatBalance, formattedContractAddress } from '@app/shared/utils';
 import {
   COMMON_CONTRACT_ADDRESS,
-  RPC_PROVIDER,
   ABIS,
+  RpcProviderSetting,
 } from '@app/shared/constants';
 import { v1 as uuidv1 } from 'uuid';
+import { TokenType } from '@app/shared/constants/setting';
 
 @Injectable()
 export class WalletService {
@@ -33,7 +34,7 @@ export class WalletService {
   async getOrCreateWalletByEth(creatorAddress: string) {
     const userExist = await this.userService.getUser(creatorAddress);
 
-    const provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
+    const provider = new Provider({ nodeUrl: RpcProviderSetting.TESTNET });
     if (userExist.mappingAddress) {
       const payerAddress = userExist.mappingAddress.address;
 
@@ -133,7 +134,7 @@ export class WalletService {
     }
     const payerAddress = userExist.mappingAddress.address;
     const decodePrivateKey = decryptData(userExist.mappingAddress.privateKey);
-    const provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
+    const provider = new Provider({ nodeUrl: RpcProviderSetting.TESTNET });
     const accountAX = new Account(provider, payerAddress, decodePrivateKey);
     const starkKeyPubAX = ec.starkCurve.getStarkKey(decodePrivateKey);
     const AXConstructorCallData = CallData.compile({
@@ -408,7 +409,7 @@ export class WalletService {
     }
     const payerAddress = userExist.mappingAddress.address;
     const decodePrivateKey = decryptData(userExist.mappingAddress.privateKey);
-    const provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
+    const provider = new Provider({ nodeUrl: RpcProviderSetting.TESTNET });
     const accountAX = new Account(provider, payerAddress, decodePrivateKey);
 
     const balanceEth = await this.getBalanceEth(accountAX, provider);
@@ -437,7 +438,7 @@ export class WalletService {
 
     const payerAddress = userExist.mappingAddress.address;
     const decodePrivateKey = decryptData(userExist.mappingAddress.privateKey);
-    const provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
+    const provider = new Provider({ nodeUrl: RpcProviderSetting.TESTNET });
     const accountAX = new Account(provider, payerAddress, decodePrivateKey);
     const balanceEth = await this.getBalanceEth(accountAX, provider);
     if (Number(formatBalance(balanceEth, 18)) < amount) {
@@ -538,7 +539,7 @@ export class WalletService {
   // Get balance of account
   async getBalanceEth(accountAx: Account, provider?: Provider) {
     if (!provider) {
-      provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
+      provider = new Provider({ nodeUrl: RpcProviderSetting.TESTNET });
     }
 
     const contractEth = new Contract(
@@ -551,7 +552,7 @@ export class WalletService {
   }
   async getBalanceStrk(accountAx: Account, provider?: Provider) {
     if (!provider) {
-      provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
+      provider = new Provider({ nodeUrl: RpcProviderSetting.TESTNET });
     }
 
     const contractStrk = new Contract(

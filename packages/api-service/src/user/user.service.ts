@@ -54,17 +54,6 @@ export class UserService {
       .populate('mappingAddress');
   }
 
-  async getDefaultRPC() {
-    const ListPublicRPC = [
-      'https://starknet-sepolia.public.blastapi.io',
-      'https://starknet-sepolia.public.blastapi.io/rpc/v0_7',
-      'https://starknet-sepolia.public.blastapi.io/rpc/v0_6',
-      'https://starknet-sepolia.reddio.com/rpc/v0_7',
-      'https://starknet-sepolia.reddio.com',
-    ];
-    return ListPublicRPC;
-  }
-
   async configCustomRPC(address: string, rpc: string[]) {
     const formatAddress = formattedContractAddress(address);
     const user = await this.userModel.findOne({
