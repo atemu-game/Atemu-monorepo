@@ -179,7 +179,7 @@ export class BliztService {
           provider,
         );
         currentBalance = formatBalance(currentBalance, 18);
-
+        client.balance = currentBalance;
         const { suggestedMaxFee: estimatedFeeMint } =
           await accountBlizt.estimateInvokeFee({
             contractAddress: COMMON_CONTRACT_ADDRESS.BLIZT,
