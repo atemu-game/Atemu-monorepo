@@ -66,7 +66,7 @@ export class BliztService {
     });
   }
 
-  async startBlizt(socket: Socket, userAddress: string) {
+  async startBlizt(socket: Socket, userAddress: string, rpc: string) {
     let client = this.sockets.find((client) => client.socket === socket);
     if (client && client.status == 'started') {
       throw new WsException('Client already exists Working');
@@ -82,7 +82,7 @@ export class BliztService {
       userExist.mappingAddress.address,
     );
     const decodePrivateKey = decryptData(userExist.mappingAddress.privateKey);
-    const provider = new Provider({ nodeUrl: RpcProviderSetting.TESTNET });
+    const provider = new Provider({ nodeUrl: rpc });
     const accountUser = new Account(provider, payerAddress, decodePrivateKey);
 
     if (client && client.status === 'stopping') {

@@ -38,8 +38,8 @@ export class BliztGateway
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   startMint(client: Socket, payload: any) {
     const userAddress = (client.handshake as any).user.sub;
-    console.log(`Start Mint from client ${userAddress}`);
-    this.bliztService.startBlizt(client, userAddress);
+    console.log(`Start Mint from client ${userAddress} :RPC ${payload.rpc}`);
+    this.bliztService.startBlizt(client, userAddress, payload.rpc);
   }
   @SubscribeMessage('stopMint')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
