@@ -1,5 +1,13 @@
 import { ApiTags } from '@nestjs/swagger';
-import { Controller, Get, Req, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Req,
+  Post,
+  Body,
+  Delete,
+  HttpCode,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { JWT, User } from '@app/shared/modules';
 
@@ -28,15 +36,26 @@ export class UsersController {
   @JWT()
   @Post('/setting/customRPC')
   async postCustomRpc(@Body() rpcDto: UpdateRpcDTO, @User() user: iInfoToken) {
-    const data = await this.userService.postCustomRPC(user.sub, rpcDto.rpc);
+    const data = await this.userService.createOrUpdateCustomRPC(
+      user.sub,
+      rpcDto.rpc,
+    );
 
     return new BaseResult(data);
   }
 
+  @HttpCode(200)
   @JWT()
   @Get('/setting/customRPC')
   async getCustomRpc(@User() user: iInfoToken) {
     const data = await this.userService.getCustomRPC(user.sub);
+    return new BaseResult(data);
+  }
+
+  @JWT()
+  @Delete('/setting/customRPC')
+  async deleteCustomRpc(@User() user: iInfoToken) {
+    const data = await this.userService.deleteCustomRPC(user.sub);
     return new BaseResult(data);
   }
 }

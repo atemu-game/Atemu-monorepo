@@ -54,18 +54,26 @@ export class UserService {
       .populate('mappingAddress');
   }
 
-  async postCustomRPC(address: string, rpc: string[]) {
+  async createOrUpdateCustomRPC(address: string, rpc: string) {
     const formatAddress = formattedContractAddress(address);
-    const user = await this.userModel.findOne({
+    const user = await this.userConfigModel.findOne({
       address: formatAddress,
     });
     if (!user) {
-      throw new BadRequestException('User not found');
+      const newUserRPC: UserConfig = {
+        address: formatAddress,
+        rpcPublicStore: [rpc],
+      };
+      const result = await this.userConfigModel.create(newUserRPC);
+      return result;
+    }
+    if (user.rpcPublicStore.includes(rpc)) {
+      throw new BadRequestException('RPC already exists in Config');
     }
     const userRPC = await this.userConfigModel
       .findOneAndUpdate(
         { address: formatAddress },
-        { $set: { rpc: rpc } },
+        { $set: { rpcPublicStore: rpc } },
         { new: true },
       )
       .exec();
@@ -76,6 +84,17 @@ export class UserService {
   async getCustomRPC(address: string) {
     const formatAddress = formattedContractAddress(address);
     const userRPC = await this.userConfigModel.findOne({
+      address: formatAddress,
+    });
+    // if (!userRPC) {
+    //   throw new BadRequestException('UserConfig not found');
+    // }
+    return userRPC;
+  }
+
+  async deleteCustomRPC(address: string) {
+    const formatAddress = formattedContractAddress(address);
+    const userRPC = await this.userConfigModel.findOneAndDelete({
       address: formatAddress,
     });
     if (!userRPC) {

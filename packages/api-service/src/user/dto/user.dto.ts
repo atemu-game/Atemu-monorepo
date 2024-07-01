@@ -21,5 +21,5 @@ export class UpdateInfoReqDTO {
 
 export class UpdateRpcDTO {
   @ApiProperty()
-  rpc: string[];
+  rpc: string;
 }
