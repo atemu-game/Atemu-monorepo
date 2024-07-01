@@ -1,6 +1,6 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { UserDocument, Users } from '@app/shared/models';
-import { Injectable } from '@nestjs/common';
+import { UserConfig, UserDocument, Users } from '@app/shared/models';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { Model } from 'mongoose';
 
 import { v1 as uuidv1 } from 'uuid';
@@ -8,7 +8,10 @@ import { formattedContractAddress } from '@app/shared/utils';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(Users.name) private userModel: Model<Users>) {}
+  constructor(
+    @InjectModel(Users.name) private userModel: Model<Users>,
+    @InjectModel(UserConfig.name) private userConfigModel: Model<UserConfig>,
+  ) {}
 
   async getOrCreateUser(userAddress: string): Promise<UserDocument> {
     const formatAddress = formattedContractAddress(userAddress);
@@ -49,5 +52,54 @@ export class UserService {
     return await this.userModel
       .findOne({ address: formatAddress })
       .populate('mappingAddress');
+  }
+
+  async createOrUpdateCustomRPC(address: string, rpc: string) {
+    const formatAddress = formattedContractAddress(address);
+    const user = await this.userConfigModel.findOne({
+      address: formatAddress,
+    });
+    if (!user) {
+      const newUserRPC: UserConfig = {
+        address: formatAddress,
+        rpcPublicStore: [rpc],
+      };
+      const result = await this.userConfigModel.create(newUserRPC);
+      return result;
+    }
+    if (user.rpcPublicStore.includes(rpc)) {
+      throw new BadRequestException('RPC already exists in Config');
+    }
+    const userRPC = await this.userConfigModel
+      .findOneAndUpdate(
+        { address: formatAddress },
+        { $set: { rpcPublicStore: rpc } },
+        { new: true },
+      )
+      .exec();
+
+    return userRPC;
+  }
+
+  async getCustomRPC(address: string) {
+    const formatAddress = formattedContractAddress(address);
+    const userRPC = await this.userConfigModel.findOne({
+      address: formatAddress,
+    });
+    // if (!userRPC) {
+    //   throw new BadRequestException('UserConfig not found');
+    // }
+    return userRPC;
+  }
+
+  async deleteCustomRPC(address: string) {
+    const formatAddress = formattedContractAddress(address);
+    const userRPC = await this.userConfigModel.findOneAndDelete({
+      address: formatAddress,
+    });
+    if (!userRPC) {
+      throw new BadRequestException('User not found');
+    }
+    return userRPC;
   }
 }

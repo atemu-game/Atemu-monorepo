@@ -8,6 +8,7 @@ import { WalletModule } from './wallet/wallet.module';
 
 import { ConfigModule } from '@nestjs/config';
 import { BliztModule } from './blizt/blizt.module';
+import { SystemModule } from './system/system.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { BliztModule } from './blizt/blizt.module';
     AuthModule,
     WalletModule,
     BliztModule,
+    SystemModule,
     MongooseModule.forRoot(configuration().DB_PATH),
   ],
   controllers: [],

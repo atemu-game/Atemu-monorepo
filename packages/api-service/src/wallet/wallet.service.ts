@@ -1,6 +1,6 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { Injectable } from '@nestjs/common';
-import { TokenType, UserDocument, Users } from '@app/shared/models';
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { UserDocument, Users } from '@app/shared/models';
 import { Model } from 'mongoose';
 import { UserService } from '../user/user.service';
 import {
@@ -18,10 +18,11 @@ import { decryptData, encryptData } from '@app/shared/utils/encode';
 import { formatBalance, formattedContractAddress } from '@app/shared/utils';
 import {
   COMMON_CONTRACT_ADDRESS,
-  RPC_PROVIDER,
   ABIS,
+  RpcProviderSetting,
 } from '@app/shared/constants';
 import { v1 as uuidv1 } from 'uuid';
+import { TokenType } from '@app/shared/constants/setting';
 
 @Injectable()
 export class WalletService {
@@ -33,7 +34,7 @@ export class WalletService {
   async getOrCreateWalletByEth(creatorAddress: string) {
     const userExist = await this.userService.getUser(creatorAddress);
 
-    const provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
+    const provider = new Provider({ nodeUrl: RpcProviderSetting.TESTNET });
     if (userExist.mappingAddress) {
       const payerAddress = userExist.mappingAddress.address;
 
@@ -124,18 +125,16 @@ export class WalletService {
   async deployWalletByEth(creatorAddress: string) {
     const userExist = await this.userService.getUser(creatorAddress);
     if (!userExist.mappingAddress) {
-      return {
-        message: `User Address argentx not created`,
-      };
+      throw new BadRequestException(`User Address argentx not created`);
     }
     if (userExist.mappingAddress.deployHash) {
-      return {
-        message: `User Address argentx already deploy at: ${userExist.mappingAddress.deployHash}`,
-      };
+      throw new BadRequestException(
+        `User Address argentx already deploy at: ${userExist.mappingAddress.deployHash}`,
+      );
     }
     const payerAddress = userExist.mappingAddress.address;
     const decodePrivateKey = decryptData(userExist.mappingAddress.privateKey);
-    const provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
+    const provider = new Provider({ nodeUrl: RpcProviderSetting.TESTNET });
     const accountAX = new Account(provider, payerAddress, decodePrivateKey);
     const starkKeyPubAX = ec.starkCurve.getStarkKey(decodePrivateKey);
     const AXConstructorCallData = CallData.compile({
@@ -149,6 +148,7 @@ export class WalletService {
       contractAddress: payerAddress,
       addressSalt: starkKeyPubAX,
     };
+
     const balanceEth = await this.getBalanceEth(accountAX, provider);
     const deployFee = await this.calculateFeeDeployAccount(
       accountAX,
@@ -156,6 +156,7 @@ export class WalletService {
       payerAddress,
     );
     if (balanceEth < deployFee.feeDeploy) {
+      console.log('What Wrogn');
       return {
         message: `Insufficient ETH balance to deploy argentx wallet, required ${deployFee.feeDeploy} ETH`,
       };
@@ -165,32 +166,36 @@ export class WalletService {
       await accountAX.deployAccount(deployAccountPayload);
     await provider.waitForTransaction(transaction_hash);
 
-    const payerUpdated = await this.usersModel.findOneAndUpdate(
-      {
-        address: payerAddress,
-      },
-      {
-        $set: {
-          deployHash: transaction_hash,
+    const payerUpdated = await this.usersModel
+      .findOneAndUpdate(
+        {
+          address: payerAddress,
         },
-      },
-      {
-        new: true,
-      },
-    );
-    await this.usersModel.findOneAndUpdate(
-      {
-        address: creatorAddress,
-      },
-      {
-        $set: {
-          mappingAddress: payerUpdated,
+        {
+          $set: {
+            deployHash: transaction_hash,
+          },
         },
-      },
-      {
-        new: true,
-      },
-    );
+        {
+          new: true,
+        },
+      )
+      .exec();
+    await this.usersModel
+      .findOneAndUpdate(
+        {
+          address: creatorAddress,
+        },
+        {
+          $set: {
+            mappingAddress: payerUpdated,
+          },
+        },
+        {
+          new: true,
+        },
+      )
+      .exec();
 
     return {
       payerAddress: contract_address,
@@ -400,21 +405,20 @@ export class WalletService {
   async getBalancePayer(creatorAddress: string) {
     const userExist = await this.userService.getUser(creatorAddress);
     if (!userExist.mappingAddress) {
-      return {
-        message: `User Address argentx not deploy`,
-      };
+      throw new BadRequestException(`User Address argentx not deploy`);
     }
     const payerAddress = userExist.mappingAddress.address;
     const decodePrivateKey = decryptData(userExist.mappingAddress.privateKey);
-    const provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
+    const provider = new Provider({ nodeUrl: RpcProviderSetting.TESTNET });
     const accountAX = new Account(provider, payerAddress, decodePrivateKey);
 
     const balanceEth = await this.getBalanceEth(accountAX, provider);
     const balanceStrk = await this.getBalanceStrk(accountAX, provider);
+
     return {
       payerAddress: payerAddress,
-      balanceEth: formatBalance(balanceEth, 18),
-      balanceStrk: formatBalance(balanceStrk, 18),
+      balanceEth: balanceEth,
+      balanceStrk: balanceStrk,
     };
   }
   async withDrawEth(
@@ -423,26 +427,32 @@ export class WalletService {
     amount: number,
   ) {
     const userExist = await this.userService.getUser(creatorAddress);
-    if (!userExist.mappingAddress) {
-      return {
-        message: `User Address argentx not created`,
-      };
+
+    if (!userExist.mappingAddress || !userExist.mappingAddress.deployHash) {
+      // throw new BadRequestException(`User Address argentx not created`);
+      throw new BadRequestException('User Address argentx invalid ', {
+        cause: new Error(),
+        description: `User Address argentx not created or deployHash not found`,
+      });
     }
-    if (userExist.mappingAddress.deployHash) {
-      return {
-        message: `User Address argentx already deploy at: ${userExist.mappingAddress.deployHash}`,
-      };
-    }
+
     const payerAddress = userExist.mappingAddress.address;
     const decodePrivateKey = decryptData(userExist.mappingAddress.privateKey);
-    const provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
+    const provider = new Provider({ nodeUrl: RpcProviderSetting.TESTNET });
     const accountAX = new Account(provider, payerAddress, decodePrivateKey);
+    const balanceEth = await this.getBalanceEth(accountAX, provider);
+    if (Number(formatBalance(balanceEth, 18)) < amount) {
+      throw new BadRequestException(
+        `Insufficient ETH balance to withdraw, Your Balance: ${formatBalance(balanceEth, 18)} ETH`,
+      );
+    }
+
     const { transaction_hash } = await accountAX.execute({
       contractAddress: COMMON_CONTRACT_ADDRESS.ETH,
       entrypoint: 'transfer',
       calldata: CallData.compile({
         recipient: reciverAddress,
-        amount: cairo.uint256(amount),
+        amount: cairo.uint256(amount * 1e18),
       }),
     });
     await provider.waitForTransaction(transaction_hash);
@@ -529,7 +539,7 @@ export class WalletService {
   // Get balance of account
   async getBalanceEth(accountAx: Account, provider?: Provider) {
     if (!provider) {
-      provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
+      provider = new Provider({ nodeUrl: RpcProviderSetting.TESTNET });
     }
 
     const contractEth = new Contract(
@@ -542,7 +552,7 @@ export class WalletService {
   }
   async getBalanceStrk(accountAx: Account, provider?: Provider) {
     if (!provider) {
-      provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
+      provider = new Provider({ nodeUrl: RpcProviderSetting.TESTNET });
     }
 
     const contractStrk = new Contract(
@@ -552,10 +562,6 @@ export class WalletService {
     );
     const initialStrk = await contractStrk.balanceOf(accountAx.address);
 
-    // Calculate future address of the ArgentX account
-    //  const balSTRK = await strkContract.call('balanceOf', [
-    //    userData.payer_address,
-    //  ]);
     return initialStrk.toString();
   }
 

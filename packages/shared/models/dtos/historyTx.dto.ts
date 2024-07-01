@@ -4,7 +4,7 @@ import { IsEnum, IsHexadecimal, IsNumber, Length } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserDto } from './user.dto';
 import { PaymentTokenDto } from './paymentToken.dto';
-import { HistoryTxType } from '../types';
+import { HistoryTxType } from '@app/shared/constants/setting';
 
 export class HistoryDto {
   @IsNumber()

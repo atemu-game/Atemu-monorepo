@@ -18,3 +18,8 @@ export class UpdateInfoReqDTO {
   // @IsString()
   // about?: string;
 }
+
+export class UpdateRpcDTO {
+  @ApiProperty()
+  rpc: string;
+}

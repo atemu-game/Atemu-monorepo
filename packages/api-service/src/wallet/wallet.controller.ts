@@ -17,7 +17,9 @@ import {
 } from './dto/wallet.dto';
 import { BaseResult } from '@app/shared/types';
 import { iInfoToken } from '@app/shared/modules/jwt/jwt.dto';
-import { TokenType } from '@app/shared/models';
+
+// TODO NOTE
+// import { TokenType } from '@app/shared/models';
 
 @ApiTags('Wallet')
 @ApiExtraModels(CreateWalletResDTO, CreateWalletReqDTO, WidthDrawDTO)
@@ -108,18 +110,8 @@ export class WalletController {
     },
   })
   async deployWallet(@Req() req: Request, @User() user: iInfoToken) {
-    try {
-      const data = await this.walletService.deployWalletByEth(user.sub);
-      return {
-        success: true,
-        data,
-      };
-    } catch (error) {
-      return new BaseResult({
-        success: false,
-        error: error.message,
-      });
-    }
+    const data = await this.walletService.deployWalletByEth(user.sub);
+    return new BaseResult(data);
   }
 
   @JWT()
@@ -157,22 +149,12 @@ export class WalletController {
     },
   })
   async getBalanceWallet(@User() user: iInfoToken) {
-    try {
-      const data = await this.walletService.getBalancePayer(user.sub);
-      return new BaseResult({
-        success: true,
-        data,
-      });
-    } catch (error) {
-      return new BaseResult({
-        success: false,
-        error: error.message,
-      });
-    }
+    const data = await this.walletService.getBalancePayer(user.sub);
+    return new BaseResult(data);
   }
 
   @JWT()
-  @Post('withdraw')
+  @Post('withdrawCreatorAccount')
   @HttpCode(200)
   @ApiOperation({
     summary: 'Width Draw ETH By Payer Address',
@@ -207,23 +189,11 @@ export class WalletController {
     },
   })
   async withdraw(@Body() withdrawDto: WidthDrawDTO, @User() user: iInfoToken) {
-    try {
-      if (withdrawDto.tokenType === TokenType.ETH) {
-        const data = await this.walletService.withDrawEth(
-          user.sub,
-          withdrawDto.reciverAddress,
-          withdrawDto.amount,
-        );
-        return new BaseResult({
-          success: true,
-          data,
-        });
-      }
-    } catch (error) {
-      return new BaseResult({
-        success: false,
-        error: error.message,
-      });
-    }
+    const data = await this.walletService.withDrawEth(
+      user.sub,
+      withdrawDto.reciverAddress,
+      withdrawDto.amount,
+    );
+    return new BaseResult(data);
   }
 }
