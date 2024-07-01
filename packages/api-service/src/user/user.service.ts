@@ -67,13 +67,16 @@ export class UserService {
       const result = await this.userConfigModel.create(newUserRPC);
       return result;
     }
+    if (user.rpcPublicStore.length >= 5) {
+      throw new BadRequestException('Max RPC is 5');
+    }
     if (user.rpcPublicStore.includes(rpc)) {
       throw new BadRequestException('RPC already exists in Config');
     }
     const userRPC = await this.userConfigModel
       .findOneAndUpdate(
         { address: formatAddress },
-        { $set: { rpcPublicStore: rpc } },
+        { $push: { rpcPublicStore: rpc } },
         { new: true },
       )
       .exec();
