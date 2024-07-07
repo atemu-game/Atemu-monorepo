@@ -218,7 +218,7 @@ export class BliztService {
           accountUser,
           provider,
         );
-
+        client.balance = Number(formatBalance(currentBalance, 18));
         txR.match({
           success: (txR: SuccessfulTransactionReceiptResponse) => {
             console.log('Success =', txR.transaction_hash);
