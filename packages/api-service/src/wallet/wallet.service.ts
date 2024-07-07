@@ -417,8 +417,8 @@ export class WalletService {
 
     return {
       payerAddress: payerAddress,
-      balanceEth: balanceEth,
-      balanceStrk: balanceStrk,
+      balanceEth: formatBalance(balanceEth, 18),
+      balanceStrk: formatBalance(balanceStrk, 18),
     };
   }
   async withDrawEth(
