@@ -1,3 +1,3 @@
 export * from './contract';
 export * from './rpc';
-export * from './abi';
+export * from '../../web3/src/abi';

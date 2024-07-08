@@ -2011,6 +2011,11 @@ chardet@^0.7.0:
   resolved "https://registry.yarnpkg.com/chardet/-/chardet-0.7.0.tgz#90094849f0937f2eedc2425d0d28a9e5f0cbad9e"
   integrity sha512-mT8iDcrh03qDGRRmoA2hmBJnxpllMR+0/0qlzjqZES6NdiWDcZkCNAk4rPFZ9Q85r27unkiNNg8ZOiwZXBHwcA==
 
+child_process@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/child_process/-/child_process-1.0.2.tgz#b1f7e7fc73d25e7fd1d455adc94e143830182b5a"
+  integrity sha512-Wmza/JzL0SiWz7kl6MhIKT5ceIlnFPJX+lwUGj7Clhy5MMldsSoJR0+uvRzOS5Kv45Mq7t1PoE8TsOA9bzvb6g==
+
 chokidar@3.6.0, chokidar@^3.5.3:
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-3.6.0.tgz#197c6cc669ef2a8dc5e7b4d97ee4e092c3eb0d5b"
@@ -3004,13 +3009,6 @@ get-port@^5.1.1:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/get-port/-/get-port-5.1.1.tgz#0469ed07563479de6efb986baf053dcd7d4e3193"
   integrity sha512-g/Q1aTSDOxFpchXC4i8ZWvxA1lnPqx/JHqcpIw0/LX9T8x/GBbi6YnlN5nhaKIFkT8oFsscUKgDJYxfwfS6QsQ==
-
-get-starknet-core@^4.0.0-next.3:
-  version "4.0.0-next.5"
-  resolved "https://registry.yarnpkg.com/get-starknet-core/-/get-starknet-core-4.0.0-next.5.tgz#a42218a78046f61b6719760bc668e01131e0c1dc"
-  integrity sha512-zZ3i4E5UYF1f04fgkwfaVC0uj1pvdBlzsDqXEAfb4jc1WO4zM7rIm4XAUqdMwVSr4CBend5RM7U+zv166fBNYg==
-  dependencies:
-    starknet-types "^0.7.1"
 
 get-stream@^6.0.0:
   version "6.0.1"
@@ -5224,20 +5222,15 @@ standard-as-callback@^2.1.0:
   resolved "https://registry.yarnpkg.com/standard-as-callback/-/standard-as-callback-2.1.0.tgz#8953fc05359868a77b5b9739a665c5977bb7df45"
   integrity sha512-qoRRSyROncaz1z0mvYqIE4lCd9p2R90i6GxW3uZv5ucSu8tU7B5HXUP1gG8pVZsYNVaXjk8ClXHPttLyxAL48A==
 
-"starknet-types-07@npm:starknet-types@^0.7.2":
-  version "0.7.2"
-  resolved "https://registry.yarnpkg.com/starknet-types/-/starknet-types-0.7.2.tgz#2a1be2392e6e568484afabdc1e83411b5105713b"
-  integrity sha512-r3JJ0rrK0g3FnVRGcFiLY+9YT5WZgxB4TKBfR44wYGevHtKEM6BM5B+Gn1eou1zV7xEAwz3GpmvLSQTUAzDhsw==
+"starknet-types-07@npm:@starknet-io/types-js@^0.7.7":
+  version "0.7.7"
+  resolved "https://registry.yarnpkg.com/@starknet-io/types-js/-/types-js-0.7.7.tgz#444be5e4e585ec6f599d42d3407280d98b2dfdf8"
+  integrity sha512-WLrpK7LIaIb8Ymxu6KF/6JkGW1sso988DweWu7p5QY/3y7waBIiPvzh27D9bX5KIJNRDyOoOVoHVEKYUYWZ/RQ==
 
-starknet-types@^0.7.1:
-  version "0.7.2"
-  resolved "https://registry.yarnpkg.com/starknet-types/-/starknet-types-0.7.2.tgz#2a1be2392e6e568484afabdc1e83411b5105713b"
-  integrity sha512-r3JJ0rrK0g3FnVRGcFiLY+9YT5WZgxB4TKBfR44wYGevHtKEM6BM5B+Gn1eou1zV7xEAwz3GpmvLSQTUAzDhsw==
-
-starknet@^6.9.0:
-  version "6.9.0"
-  resolved "https://registry.yarnpkg.com/starknet/-/starknet-6.9.0.tgz#34ee94790787749a3d88681b386c2dcfc71e5f54"
-  integrity sha512-8860J7sGUr5UO/BDl3pjCZNUs/vgUM75wVoI93iOYLbTGF0f6MvFZsMOd73tsPKjEcG8V5BTSx6I7seDhQ9osw==
+starknet@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/starknet/-/starknet-7.0.0.tgz#debaaa5d92d474f9cce69c2ec80038797db69e9a"
+  integrity sha512-TF4OhkouJuTvSniATB+rxjsiuaicjb5IPPwc2NhcYfIVM6FA+eNnacE9o54IFUNh7CAvltjfDqyvEXM99VIBpA==
   dependencies:
     "@noble/curves" "~1.4.0"
     "@noble/hashes" "^1.4.0"
@@ -5245,11 +5238,10 @@ starknet@^6.9.0:
     "@scure/starknet" "~1.0.0"
     abi-wan-kanabi "^2.2.2"
     fetch-cookie "^3.0.0"
-    get-starknet-core "^4.0.0-next.3"
     isomorphic-fetch "^3.0.0"
     lossless-json "^4.0.1"
     pako "^2.0.4"
-    starknet-types-07 "npm:starknet-types@^0.7.2"
+    starknet-types-07 "npm:@starknet-io/types-js@^0.7.7"
     ts-mixer "^6.0.3"
     url-join "^4.0.1"
 
