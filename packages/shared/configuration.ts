@@ -9,6 +9,8 @@ export default () => ({
   DB_PATH: String(process.env.DB_PATH),
   API_PORT: Number(process.env.API_PORT) || 8088,
   SOCKET_PORT: Number(process.env.SOCKET_PORT) || 8000,
+  ONCHAIN_QUEUE_PORT: Number(process.env.ONCHAIN_QUEUE_PORT) || 8089,
+  ONCHAIN_WORKER_PORT: Number(process.env.ONCHAIN_WORKER_PORT) || 8090,
 
   // JWT Setup
   JWT_SECRET: String(process.env.JWT_SECRET),
