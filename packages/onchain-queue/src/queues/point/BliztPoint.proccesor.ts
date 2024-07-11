@@ -4,7 +4,7 @@ import { ONCHAIN_JOB, ONCHAIN_QUEUES } from '@app/shared/constants/queue';
 import { Process, Processor } from '@nestjs/bull';
 import { Queue, Job } from 'bull';
 import { OnchainQueueService } from 'onchain-queue/src/onchainQueue.service';
-import { UserPoints } from '@app/shared/models/schema/userpoints.schema';
+
 import { Model } from 'mongoose';
 import { InjectQueue } from '@nestjs/bull';
 import { LogsReturnValues } from 'web3/src/types';
@@ -14,8 +14,7 @@ import { retryUntil } from '@app/shared/index';
 export class BliztPointProcessor {
   constructor(
     private readonly onQueueService: OnchainQueueService,
-    @InjectModel(UserPoints.name)
-    private userPointModel: Model<UserPoints>,
+
     @InjectModel(Chains.name) private chainModel: Model<ChainDocument>,
     @InjectQueue(ONCHAIN_QUEUES.QUEUE_ADD_POINT)
     private readonly queue: Queue<LogsReturnValues>,

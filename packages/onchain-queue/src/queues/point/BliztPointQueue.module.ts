@@ -9,6 +9,8 @@ import {
   UserPointsSchema,
 } from '@app/shared/models/schema/userpoints.schema';
 import { UserPointService } from 'onchain-queue/src/userpoints/userpoint.service';
+import { BliztPointProcessor } from './BliztPoint.proccesor';
+import { OnchainQueueService } from 'onchain-queue/src/onchainQueue.service';
 
 @Module({
   imports: [
@@ -30,7 +32,11 @@ import { UserPointService } from 'onchain-queue/src/userpoints/userpoint.service
       name: ONCHAIN_QUEUES.QUEUE_ADD_POINT,
     }),
   ],
-  controllers: [],
-  providers: [Web3Service, UserPointService],
+  providers: [
+    Web3Service,
+    UserPointService,
+    BliztPointProcessor,
+    OnchainQueueService,
+  ],
 })
 export class BliztPointQueueModule {}
