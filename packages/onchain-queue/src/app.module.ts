@@ -1,23 +1,20 @@
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { BliztPointQueueModule } from './queues/point/BliztPointQueue.module';
 import { MongooseModule } from '@nestjs/mongoose';
-
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { Web3Module } from 'web3/src/web3.module';
 import configuration from '@app/shared/configuration';
-import { BliztItemModule } from './blizt/blizt-item.module';
+import { ConfigService, ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ load: [configuration] }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+    }),
     MongooseModule.forRoot(configuration().DB_PATH),
-    Web3Module,
-    BliztItemModule,
     BullModule.forRootAsync({
-      imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({
+        imports: [ConfigModule],
         redis: {
           host: config.get('QUEUE_HOST'),
           port: config.get('QUEUE_PORT'),
@@ -25,8 +22,9 @@ import { BullModule } from '@nestjs/bull';
       }),
       inject: [ConfigService],
     }),
+    BliztPointQueueModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
-export class AppModule {}
+export class OnChainQueueModule {}

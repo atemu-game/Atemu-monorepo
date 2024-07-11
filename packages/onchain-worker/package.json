@@ -22,7 +22,8 @@
   "dependencies": {
     "@nestjs/bull": "^10.1.1",
     "bull": "^4.15.1",
-    "shared": "0.0.1"
+    "shared": "0.0.1",
+    "web3": "0.0.1"
   },
   "devDependencies": {},
   "jest": {

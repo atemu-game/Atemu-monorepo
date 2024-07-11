@@ -10,7 +10,6 @@ export class Web3Service {
     const provider = new Provider({ nodeUrl: rpc });
     return provider;
   }
-
   async getBlockTime(rpc: string) {
     const provider = this.getProvider(rpc);
     const block = await provider.getBlock('latest');
@@ -56,7 +55,7 @@ export class Web3Service {
           }
         }
       }
-      return eventWithTypes;
     }
+    return eventWithTypes;
   }
 }

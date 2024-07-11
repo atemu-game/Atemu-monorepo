@@ -26,4 +26,9 @@ export default () => ({
   // RPC - Provider
   PRIVATE_KEY: String(process.env.PRIVATE_KEY),
   ACCOUNT_ADDRESS: String(process.env.ACCOUNT_ADDRESS),
+
+  BEGIN_BLOCK: Number(process.env.BEGIN_BLOCK) || 78000,
+
+  QUEUE_HOST: String(process.env.QUEUE_HOST),
+  QUEUE_PORT: Number(process.env.QUEUE_PORT),
 });

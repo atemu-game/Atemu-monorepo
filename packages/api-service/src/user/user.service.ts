@@ -1,5 +1,10 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { UserConfig, UserDocument, Users } from '@app/shared/models';
+import {
+  UserConfig,
+  UserConfigDocument,
+  UserDocument,
+  Users,
+} from '@app/shared/models';
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { Model } from 'mongoose';
 
@@ -9,8 +14,9 @@ import { formattedContractAddress } from '@app/shared/utils';
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(Users.name) private userModel: Model<Users>,
-    @InjectModel(UserConfig.name) private userConfigModel: Model<UserConfig>,
+    @InjectModel(Users.name) private userModel: Model<UserDocument>,
+    @InjectModel(UserConfig.name)
+    private userConfigModel: Model<UserConfigDocument>,
   ) {}
 
   async getOrCreateUser(userAddress: string): Promise<UserDocument> {

@@ -1,8 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { BaseSchema } from './base.schema';
+import { Document } from 'mongoose';
 export type ChainDocument = Chains & Document;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, collection: 'chains' })
 export class Chains extends BaseSchema {
   @Prop()
   name: string;
