@@ -54,7 +54,6 @@ export class BlockDetectService extends OnchainWorker {
       .sort({ blockNumber: -1 });
     this.currentBlock =
       (latestBlock?.blockNumber || configuration().BEGIN_BLOCK - 1) + 1;
-    this.currentBlock = 78270;
 
     this.provider = new RpcProvider({ nodeUrl: this.chain.rpc });
 
