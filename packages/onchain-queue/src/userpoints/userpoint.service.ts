@@ -17,7 +17,6 @@ export class UserPointService {
     private readonly usersModel: Model<Users>,
   ) {}
   async getUserPoint(address: string): Promise<UserPoints> {
-    console.log('Address', address);
     return await this.userPointsModel.findOne({
       address: formattedContractAddress(address),
     });
@@ -28,7 +27,8 @@ export class UserPointService {
     });
 
     if (!existUser) {
-      throw new Error('User not found');
+      console.log('User not found', address);
+      return;
     }
     const existingUserPoint = await this.getUserPoint(address);
     if (!existingUserPoint) {
@@ -38,10 +38,9 @@ export class UserPointService {
       };
       return await this.userPointsModel.create(newUserPoint);
     }
-
     return await this.userPointsModel.findOneAndUpdate(
       { address: formattedContractAddress(address) },
-      { points },
+      { $inc: { points } },
       { upsert: true, new: true },
     );
   }

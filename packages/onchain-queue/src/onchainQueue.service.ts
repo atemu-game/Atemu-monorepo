@@ -21,14 +21,8 @@ export class OnchainQueueService {
   async proccessAddPointEvent(log: LogsReturnValues) {
     const { reciver, point } = log.returnValues;
 
-    const userPoint = await this.userPointService.getUserPoint(reciver);
-    if (!userPoint) {
-      await this.userPointService.updateUserPoint(reciver, point);
-    } else {
-      await this.userPointService.updateUserPoint(
-        reciver,
-        userPoint.points + point,
-      );
-    }
+    // const userPoint = await this.userPointService.getUserPoint(reciver);
+
+    await this.userPointService.updateUserPoint(reciver, point);
   }
 }
