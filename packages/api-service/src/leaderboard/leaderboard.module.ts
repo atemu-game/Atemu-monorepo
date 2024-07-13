@@ -6,6 +6,7 @@ import {
   UserPointsSchema,
 } from '@app/shared/models/schema/userpoints.schema';
 import { LeaderboardService } from './leaderboard.service';
+import { LeaderboardController } from './leaderboard.controller';
 @Module({
   imports: [
     UsersModule,
@@ -13,7 +14,8 @@ import { LeaderboardService } from './leaderboard.service';
       { name: UserPoints.name, schema: UserPointsSchema },
     ]),
   ],
-  providers: [],
-  exports: [LeaderboardService],
+  controllers: [LeaderboardController],
+  providers: [LeaderboardService],
+  exports: [],
 })
 export class LeadboardModule {}
