@@ -7,6 +7,7 @@ export class Web3Service {
 
   getProvider(rpc: string) {
     const provider = new Provider({ nodeUrl: rpc });
+
     return provider;
   }
 

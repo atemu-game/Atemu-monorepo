@@ -87,6 +87,7 @@ export class AuthService {
 
       return convertDataIntoString(result);
     } catch (error) {
+      console.log('Error ', error);
       throw new Error(error);
     }
   }
@@ -108,8 +109,11 @@ export class AuthService {
         formattedContractAddress(address),
       );
     }
+
     const token = await this.generateToken(accessPayload);
+
     await this.userService.updateRandomNonce(address);
+
     return {
       token: token,
     };
