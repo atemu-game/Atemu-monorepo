@@ -9,6 +9,16 @@ export enum BlockWorkerStatus {
   FAILED = 2,
 }
 
+export enum TransactionWorkerStatus {
+  PENDING = 0,
+  SUCCESS = 1,
+}
+
+export type TransactionWorkerType = {
+  txHash: string;
+  status: TransactionWorkerStatus;
+};
+
 @Schema()
 export class Blocks {
   @Prop({ index: true })
@@ -18,7 +28,7 @@ export class Blocks {
   chain: string;
 
   @Prop()
-  transactions: string[];
+  transactions: TransactionWorkerType[];
 
   @Prop()
   status: BlockWorkerStatus;

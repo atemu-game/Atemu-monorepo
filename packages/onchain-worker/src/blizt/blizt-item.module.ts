@@ -16,12 +16,38 @@ import { OnchainWorkerQueueService } from '../queue/onchainWorkerQueue';
       { name: Chains.name, schema: ChainSchema },
       { name: Blocks.name, schema: BlockSchema },
     ]),
-    BullModule.registerQueue({
-      name: ONCHAIN_QUEUES.QUEUE_ADD_POINT,
-      defaultJobOptions: MQ_JOB_DEFAULT_CONFIG,
-    }),
+    BullModule.registerQueue(
+      {
+        name: ONCHAIN_QUEUES.QUEUE_ADD_POINT,
+        defaultJobOptions: MQ_JOB_DEFAULT_CONFIG,
+      },
+      {
+        name: ONCHAIN_QUEUES.QUEUE_TRANSFER_POINT,
+        defaultJobOptions: MQ_JOB_DEFAULT_CONFIG,
+      },
+      {
+        name: ONCHAIN_QUEUES.QUEUE_CREATE_POOL,
+        defaultJobOptions: MQ_JOB_DEFAULT_CONFIG,
+      },
+      {
+        name: ONCHAIN_QUEUES.QUEUE_JOIN_POOL,
+        defaultJobOptions: MQ_JOB_DEFAULT_CONFIG,
+      },
+      {
+        name: ONCHAIN_QUEUES.QUEUE_CLAIM_FUEL_REWARD,
+        defaultJobOptions: MQ_JOB_DEFAULT_CONFIG,
+      },
+      {
+        name: ONCHAIN_QUEUES.QUEUE_MINT_CARD,
+        defaultJobOptions: MQ_JOB_DEFAULT_CONFIG,
+      },
+      {
+        name: ONCHAIN_QUEUES.QUEUE_TRANSFER_CARD,
+        defaultJobOptions: MQ_JOB_DEFAULT_CONFIG,
+      },
+    ),
   ],
   controllers: [BliztItemController],
-  providers: [BliztItemController, Web3Service, OnchainWorkerQueueService],
+  providers: [Web3Service, OnchainWorkerQueueService],
 })
 export class BliztItemModule {}

@@ -11,6 +11,7 @@ export default () => ({
   SOCKET_PORT: Number(process.env.SOCKET_PORT) || 8000,
   ONCHAIN_QUEUE_PORT: Number(process.env.ONCHAIN_QUEUE_PORT) || 8089,
   ONCHAIN_WORKER_PORT: Number(process.env.ONCHAIN_WORKER_PORT) || 8090,
+  OFFCHAIN_WORKER_PORT: Number(process.env.OFFCHAIN_WORKER_PORT) || 8091,
 
   // JWT Setup
   JWT_SECRET: String(process.env.JWT_SECRET),
@@ -26,6 +27,8 @@ export default () => ({
   // RPC - Provider
   PRIVATE_KEY: String(process.env.PRIVATE_KEY),
   ACCOUNT_ADDRESS: String(process.env.ACCOUNT_ADDRESS),
+
+  IPFS_GATEWAY: String(process.env.IPFS_GATEWAY),
 
   BEGIN_BLOCK: Number(process.env.BEGIN_BLOCK) || 50000,
 

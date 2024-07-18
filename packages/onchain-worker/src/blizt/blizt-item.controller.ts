@@ -24,6 +24,18 @@ export class BliztItemController {
     @InjectModel(Blocks.name) private readonly blockModel: Model<BlockDocument>,
     @InjectQueue(ONCHAIN_QUEUES.QUEUE_ADD_POINT)
     private readonly addPointQueue: Queue<LogsReturnValues>,
+    @InjectQueue(ONCHAIN_QUEUES.QUEUE_TRANSFER_POINT)
+    private readonly transferPointQueue: Queue<LogsReturnValues>,
+    @InjectQueue(ONCHAIN_QUEUES.QUEUE_CREATE_POOL)
+    private readonly createFuelPoolQueue: Queue<LogsReturnValues>,
+    @InjectQueue(ONCHAIN_QUEUES.QUEUE_JOIN_POOL)
+    private readonly joinFuelPoolQueue: Queue<LogsReturnValues>,
+    @InjectQueue(ONCHAIN_QUEUES.QUEUE_CLAIM_FUEL_REWARD)
+    private readonly claimFuelRewardQueue: Queue<LogsReturnValues>,
+    @InjectQueue(ONCHAIN_QUEUES.QUEUE_MINT_CARD)
+    private readonly mintCardQueue: Queue<LogsReturnValues>,
+    @InjectQueue(ONCHAIN_QUEUES.QUEUE_TRANSFER_CARD)
+    private readonly transferCardQueue: Queue<LogsReturnValues>,
 
     private readonly web3Service: Web3Service,
     private readonly onchainQueueService: OnchainWorkerQueueService,
@@ -45,6 +57,12 @@ export class BliztItemController {
             this.web3Service,
             chain,
             this.addPointQueue,
+            this.transferPointQueue,
+            this.createFuelPoolQueue,
+            this.joinFuelPoolQueue,
+            this.claimFuelRewardQueue,
+            this.mintCardQueue,
+            this.transferCardQueue,
           ),
       );
 

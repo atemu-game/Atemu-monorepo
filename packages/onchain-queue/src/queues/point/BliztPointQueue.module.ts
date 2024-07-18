@@ -1,16 +1,23 @@
 import { BullModule } from '@nestjs/bull';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Module } from '@nestjs/common';
-import { Chains, ChainSchema, Users, UserSchema } from '@app/shared/models';
-import { ONCHAIN_QUEUES } from '@app/shared/constants/queue';
-import { Web3Service } from 'web3/src/web3.service';
 import {
-  UserPoints,
-  UserPointsSchema,
-} from '@app/shared/models/schema/userpoints.schema';
+  Chains,
+  ChainSchema,
+  HistoryTx,
+  HistoryTxChema,
+  Users,
+  UserSchema,
+} from '@app/shared/models';
+import {
+  MQ_JOB_DEFAULT_CONFIG,
+  ONCHAIN_QUEUES,
+} from '@app/shared/constants/queue';
+import { Web3Service } from 'web3/src/web3.service';
+
 import { UserPointService } from 'onchain-queue/src/userpoints/userpoint.service';
-import { BliztPointProcessor } from './BliztPoint.proccesor';
-import { OnchainQueueService } from 'onchain-queue/src/onchainQueue.service';
+import { BliztPointProcessor } from './processors/BliztPoint.processor';
+import { PointService } from './point.service';
 
 @Module({
   imports: [
@@ -20,23 +27,19 @@ import { OnchainQueueService } from 'onchain-queue/src/onchainQueue.service';
         schema: ChainSchema,
       },
       {
-        name: UserPoints.name,
-        schema: UserPointsSchema,
-      },
-      {
         name: Users.name,
         schema: UserSchema,
+      },
+      {
+        name: HistoryTx.name,
+        schema: HistoryTxChema,
       },
     ]),
     BullModule.registerQueue({
       name: ONCHAIN_QUEUES.QUEUE_ADD_POINT,
+      defaultJobOptions: MQ_JOB_DEFAULT_CONFIG,
     }),
   ],
-  providers: [
-    Web3Service,
-    UserPointService,
-    BliztPointProcessor,
-    OnchainQueueService,
-  ],
+  providers: [Web3Service, UserPointService, BliztPointProcessor, PointService],
 })
 export class BliztPointQueueModule {}

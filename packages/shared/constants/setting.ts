@@ -1,7 +1,11 @@
 export enum HistoryTxType {
-  Transfer = 'transfer',
+  TransferPoint = 'transferPoint',
   Deposit = 'deposit',
   Withdraw = 'withdraw',
+  JoinFuelPool = 'joinFuelPool',
+  ClaimFuelReward = 'ClaimFuelReward',
+  MintCard = 'MintCard',
+  TransferCard = 'TransferCard',
 }
 export enum TokenType {
   ETH = 'ETH',

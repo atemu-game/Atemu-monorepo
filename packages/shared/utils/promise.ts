@@ -61,3 +61,14 @@ export async function retryUntil<T>(
   throw new Error(`Failed after ${maxAttempts} attempts`);
   // return null; // Indicate failure after all attempts
 }
+
+export async function attemptOperations(
+  operations: (() => Promise<any>)[],
+): Promise<any> {
+  for (const operation of operations) {
+    try {
+      return await operation();
+    } catch (error) {}
+  }
+  return null;
+}

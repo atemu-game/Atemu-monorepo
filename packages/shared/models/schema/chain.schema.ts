@@ -19,6 +19,12 @@ export class Chains extends BaseSchema {
 
   @Prop()
   bliztContractAdress: string;
+
+  @Prop()
+  fuelContract: string;
+
+  @Prop()
+  cardsContract: string;
 }
 
 export const ChainSchema = SchemaFactory.createForClass(Chains);

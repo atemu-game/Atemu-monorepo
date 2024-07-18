@@ -1,22 +1,23 @@
 import { Logger, GatewayTimeoutException } from '@nestjs/common';
 import { BlockedQueue } from '@app/shared/BlockedQueue';
-import { Block } from 'starknet';
+import { GetBlockResponse } from 'starknet';
 import { delay } from '@app/shared/utils/promise';
 
 export abstract class OnchainWorker {
   currentBlock: number;
-  blockNumberBuffer: BlockedQueue<number>;
-  blockDataBuffer: BlockedQueue<Block>;
+  pendingBlock: number;
+  blockNumberBuffer: BlockedQueue<number | 'pending'>;
+  blockDataBuffer: BlockedQueue<GetBlockResponse>;
   maxBlockSize: number;
   maxBatchSize: number;
   delayFetchBlock = 3;
   abstract init: () => Promise<void>;
   abstract fetchLatestBlock: () => Promise<number>;
   abstract fillBlockDataBuffer: (
-    blocks: number[],
-  ) => Promise<{ [k: number]: Block }>;
+    blocks: (number | 'pending')[],
+  ) => Promise<{ [k: number]: GetBlockResponse }>;
 
-  abstract process: (data: Block) => Promise<void>;
+  abstract process: (data: GetBlockResponse) => Promise<void>;
   shutdown = false;
   private running = false;
   get isRunning(): boolean {
@@ -46,6 +47,7 @@ export abstract class OnchainWorker {
         ]);
         if (!latestBlock)
           throw new GatewayTimeoutException('fetchBlockNumber timeout');
+        this.pendingBlock = latestBlock + 1;
         for (
           this.currentBlock;
           this.currentBlock <= latestBlock;
@@ -53,6 +55,7 @@ export abstract class OnchainWorker {
         ) {
           this.blockNumberBuffer.put(this.currentBlock);
         }
+        this.blockNumberBuffer.put('pending');
       } catch (error) {
         this.logger.error(error, error.stack);
         this.logger.warn('Fail to fetchBlockNumber. Try again ...');
@@ -94,7 +97,7 @@ export abstract class OnchainWorker {
           try {
             const begin = new Date();
             let data: {
-              [k: number]: Block;
+              [k: number]: GetBlockResponse;
             } | void = undefined;
 
             let dataKeys = {} as any;
