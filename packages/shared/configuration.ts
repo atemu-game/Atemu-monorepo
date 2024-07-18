@@ -31,7 +31,7 @@ export default () => ({
 
   IPFS_GATEWAY: String(process.env.IPFS_GATEWAY),
 
-  BEGIN_BLOCK: Number(process.env.BEGIN_BLOCK) || 50000,
+  BEGIN_BLOCK: Number(process.env.BEGIN_BLOCK) || 60000,
 
   QUEUE_HOST: String(process.env.QUEUE_HOST),
   QUEUE_PORT: Number(process.env.QUEUE_PORT),

@@ -31,7 +31,7 @@ export class BliztGateway
   }
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
-    this.bliztService.disconnectBlizt(client);
+    // this.bliztService.disconnectBlizt(client);
     this.clients.delete(client);
   }
   @SubscribeMessage('startMint')

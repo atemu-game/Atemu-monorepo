@@ -34,6 +34,7 @@ export type BliztParam = {
   status: BliztSatus;
   point: number;
   balance: number;
+  address: string;
 };
 @Injectable()
 export class BliztService {
@@ -69,11 +70,12 @@ export class BliztService {
   async startBlizt(socket: Socket, userAddress: string, rpc: string) {
     let client = this.sockets.find((client) => client.socket === socket);
     if (client && client.status == 'started') {
-      // throw new WsException('Client already exists Working');
       socket.emit('error', 'Client already exists Working');
       return;
     }
+
     const formatAddress = formattedContractAddress(userAddress);
+
     const point = await this.getUserPoint(userAddress);
     const userExist = await this.userService.getUser(formatAddress);
     if (!userExist.mappingAddress) {
@@ -105,6 +107,7 @@ export class BliztService {
           socket,
           status: 'starting',
           point: point,
+          address: formatAddress,
           balance: currentBalance,
         };
         this.sockets.push(client);
@@ -198,6 +201,7 @@ export class BliztService {
         if (currentBalance < formatBalance(estimatedFeeMint, 18)) {
           client.status = 'balance_low';
           this.sendBliztStatus(client);
+          this.disconnectBlizt(socket);
           break;
         }
 
