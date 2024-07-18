@@ -1,5 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { BaseSchema } from './base.schema';
+import { SchemaTypes } from 'mongoose';
+import { TypeOfInviteCode } from '@app/shared/constants';
 export type ReferralsDocument = Document & Referrals;
 @Schema({
   collection: 'referrals',
@@ -18,10 +20,21 @@ export class Referrals extends BaseSchema {
   address: string;
 
   @Prop()
+  name?: string;
+  @Prop()
+  description?: string;
+
+  @Prop()
   referralCode: string;
+
+  @Prop({ type: SchemaTypes.String, enum: TypeOfInviteCode })
+  kindInviteCode: TypeOfInviteCode;
 
   @Prop({ default: 0 })
   amountActive: number;
+
+  @Prop()
+  availableAt: number;
 
   @Prop()
   expiredDate: number;

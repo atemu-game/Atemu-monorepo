@@ -67,6 +67,26 @@ export class BliztService {
     });
   }
 
+  async handleReconnectBlizt(socket: Socket, userAddress: string) {
+    const formatAddress = formattedContractAddress(userAddress);
+    // Check If Exist Client Address
+    const autoBlizt = this.sockets.find(
+      (client) => client.address === formatAddress,
+    );
+    if (autoBlizt) {
+      autoBlizt.socket = socket;
+      const client = {
+        socket,
+        status: autoBlizt.status,
+        point: autoBlizt.point,
+        address: formatAddress,
+        balance: autoBlizt.balance,
+      };
+      this.sendBliztStatus(client);
+      this.sendBliztBalance(client);
+    }
+  }
+
   async startBlizt(socket: Socket, userAddress: string, rpc: string) {
     let client = this.sockets.find((client) => client.socket === socket);
     if (client && client.status == 'started') {
@@ -103,6 +123,7 @@ export class BliztService {
           provider,
         );
         currentBalance = formatBalance(currentBalance, 18);
+
         client = {
           socket,
           status: 'starting',
