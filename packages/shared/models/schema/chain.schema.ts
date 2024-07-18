@@ -21,7 +21,7 @@ export class Chains extends BaseSchema {
   bliztContractAdress: string;
 
   @Prop()
-  fuelContract: string;
+  fuelContracts: string[];
 
   @Prop()
   cardsContract: string;

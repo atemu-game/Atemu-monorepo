@@ -29,6 +29,7 @@ import {
   JOB_QUEUE_NFT_METADATA,
   QUEUE_METADATA,
 } from '@app/shared/constants/queue';
+import { formattedContractAddress } from '@app/shared/utils';
 
 @Injectable()
 export class FuelService implements OnchainQueueService {
@@ -60,23 +61,36 @@ export class FuelService implements OnchainQueueService {
     await process[log.eventType].call(this, log, chain);
   }
 
-  async getOrCreatePool(id: number, chain: ChainDocument) {
-    const poolDocument = await this.fuelPoolModel.findOne({ id });
+  async getOrCreatePool(
+    id: number,
+    poolContract: string,
+    chain: ChainDocument,
+  ) {
+    const formatdAddress = formattedContractAddress(poolContract);
+    const poolDocument = await this.fuelPoolModel.findOne({
+      id,
+      address: formatdAddress,
+    });
 
     if (poolDocument) {
       return poolDocument;
     }
 
-    const newPool = await this.web3Service.getPoolDetail(id, chain);
+    const newPool = await this.web3Service.getPoolDetail(
+      id,
+      formatdAddress,
+      chain,
+    );
 
     if (newPool.startAt > 0) {
       const newPoolEntity: FuelPool = {
         id: newPool.id,
+        address: formatdAddress,
         startAt: newPool.startAt,
         endAt: newPool.endAt,
       };
       return await this.fuelPoolModel.findOneAndUpdate(
-        { id },
+        { id, address: formatdAddress },
         { $set: newPoolEntity },
         { upsert: true, new: true },
       );
@@ -86,28 +100,34 @@ export class FuelService implements OnchainQueueService {
   }
 
   async processCreatePoolEv(log: LogsReturnValues, chain: ChainDocument) {
-    const { id, startAt, endAt } = log.returnValues as CreatePoolReturnValue;
+    const { id, poolContract, startAt, endAt } =
+      log.returnValues as CreatePoolReturnValue;
 
     const newPool: FuelPool = {
       id,
+      address: poolContract,
       startAt,
       endAt,
     };
 
     await this.fuelPoolModel.findOneAndUpdate(
-      { id },
+      { id, address: poolContract },
       { $set: newPool },
       { upsert: true },
     );
   }
 
   async processJoinPoolEv(log: LogsReturnValues, chain: ChainDocument) {
-    const { player, poolId, stakedAmount, joinedAt } =
+    const { player, poolId, poolContract, stakedAmount, joinedAt } =
       log.returnValues as joinningPoolReturnValue;
 
     const playerDocument = await this.userPointService.getUser(player);
 
-    const poolDocument = await this.getOrCreatePool(poolId, chain);
+    const poolDocument = await this.getOrCreatePool(
+      poolId,
+      poolContract,
+      chain,
+    );
 
     if (!poolDocument) {
       return;
@@ -118,6 +138,7 @@ export class FuelService implements OnchainQueueService {
 
     const existingJoinPool = await this.joinFuelPoolModel.findOne({
       poolId,
+      poolContract,
       user: playerDocument,
     });
 
@@ -128,6 +149,7 @@ export class FuelService implements OnchainQueueService {
       const newJoinPool: JoinFuelPool = {
         pool: poolDocument,
         poolId,
+        poolContract,
         user: playerDocument,
         stakedAmount,
       };
@@ -139,6 +161,8 @@ export class FuelService implements OnchainQueueService {
       txHash: log.transaction_hash,
       index: log.index,
       from: playerDocument,
+      poolContract,
+      poolId,
       amountPoints: stakedAmount,
       amountCards: 0,
       timestamp: joinedAt,
@@ -155,6 +179,7 @@ export class FuelService implements OnchainQueueService {
   async processClaimRewardEv(log: LogsReturnValues, chain: ChainDocument) {
     const {
       poolId,
+      poolContract,
       winner,
       totalPoints,
       cardAddress,
@@ -163,7 +188,11 @@ export class FuelService implements OnchainQueueService {
       timestamp,
     } = log.returnValues as ClaimRewardsReturnValue;
 
-    const poolDocument = await this.getOrCreatePool(poolId, chain);
+    const poolDocument = await this.getOrCreatePool(
+      poolId,
+      poolContract,
+      chain,
+    );
     if (!poolDocument) {
       return;
     }
@@ -210,6 +239,8 @@ export class FuelService implements OnchainQueueService {
       index: log.index,
       from: winnerUser,
       amountPoints: totalPoints,
+      poolContract,
+      poolId,
       cardAddress,
       cardId,
       amountCards,

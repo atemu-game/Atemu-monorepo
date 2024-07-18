@@ -14,6 +14,9 @@ export class JoinFuelPool extends BaseSchema {
   @Prop()
   poolId: number;
 
+  @Prop()
+  poolContract: string;
+
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Users' })
   user: UserDocument;
 
@@ -22,4 +25,7 @@ export class JoinFuelPool extends BaseSchema {
 }
 
 export const JoinFuelPoolSchema = SchemaFactory.createForClass(JoinFuelPool);
-JoinFuelPoolSchema.index({ poolId: 1, user: 1 }, { unique: true });
+JoinFuelPoolSchema.index(
+  { poolId: 1, poolContract: 1, user: 1 },
+  { unique: true },
+);

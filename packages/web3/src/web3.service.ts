@@ -56,11 +56,12 @@ export class Web3Service {
 
   async getPoolDetail(
     poolId: number,
+    fuelContract: string,
     chain: ChainDocument,
   ): Promise<{ id: number; startAt: number; endAt: number }> {
     const contractInstance = await this.getContractInstance(
       ABIS.FuelABI,
-      chain.fuelContract,
+      fuelContract,
       chain.rpc,
     );
 
@@ -122,7 +123,9 @@ export class Web3Service {
           });
         } else if (
           event.keys.includes(EventTopic.CREATE_POOL) &&
-          chain.fuelContract == formattedContractAddress(event.from_address)
+          chain.fuelContracts.includes(
+            formattedContractAddress(event.from_address),
+          )
         ) {
           eventWithTypes.push({
             ...txReceiptFilter,
@@ -132,7 +135,9 @@ export class Web3Service {
           });
         } else if (
           event.keys.includes(EventTopic.JOINING_POOL) &&
-          chain.fuelContract == formattedContractAddress(event.from_address)
+          chain.fuelContracts.includes(
+            formattedContractAddress(event.from_address),
+          )
         ) {
           eventWithTypes.push({
             ...txReceiptFilter,
@@ -146,7 +151,9 @@ export class Web3Service {
           });
         } else if (
           event.keys.includes(EventTopic.CLAIM_REWARD) &&
-          chain.fuelContract == formattedContractAddress(event.from_address)
+          chain.fuelContracts.includes(
+            formattedContractAddress(event.from_address),
+          )
         ) {
           eventWithTypes.push({
             ...txReceiptFilter,

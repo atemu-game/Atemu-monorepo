@@ -11,6 +11,9 @@ export class FuelPool extends BaseSchema {
   id: number;
 
   @Prop()
+  address: string;
+
+  @Prop()
   startAt: number;
 
   @Prop()
@@ -24,4 +27,4 @@ export class FuelPool extends BaseSchema {
 }
 
 export const FuelPoolSchema = SchemaFactory.createForClass(FuelPool);
-FuelPoolSchema.index({ id: 1 }, { unique: true });
+FuelPoolSchema.index({ id: 1, address: 1 }, { unique: true });

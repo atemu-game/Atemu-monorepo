@@ -65,22 +65,23 @@ export const decodeTransferPoint = (
 
 export type CreatePoolReturnValue = {
   id: number;
+  poolContract: string;
   startAt: number;
   endAt: number;
 };
 
 export const decodeCreatePool = (txReceipt: any, provider: Provider) => {
-  const contract = new Contract(
-    ABIS.FuelABI,
-    formattedContractAddress(txReceipt.events[0].from_address),
-    provider,
+  const poolContract = formattedContractAddress(
+    txReceipt.events[0].from_address,
   );
+  const contract = new Contract(ABIS.FuelABI, poolContract, provider);
 
   const parsedEvent =
     contract.parseEvents(txReceipt)[0]['atemu::fuel::fuel::Fuel::CreatePool'];
 
   const returnValue: CreatePoolReturnValue = {
     id: Number((parsedEvent.id as bigint).toString()),
+    poolContract,
     startAt: Number((parsedEvent.startAt as bigint).toString()) * 1e3,
     endAt: Number((parsedEvent.endAt as bigint).toString()) * 1e3,
   };
@@ -90,6 +91,7 @@ export const decodeCreatePool = (txReceipt: any, provider: Provider) => {
 
 export type joinningPoolReturnValue = {
   player: string;
+  poolContract: string;
   poolId: number;
   stakedAmount: number;
   joinedAt: number;
@@ -100,11 +102,10 @@ export const decodeJoinningPool = (
   provider: Provider,
   timestamp: number,
 ) => {
-  const contract = new Contract(
-    ABIS.FuelABI,
-    formattedContractAddress(txReceipt.events[0].from_address),
-    provider,
+  const poolContract = formattedContractAddress(
+    txReceipt.events[0].from_address,
   );
+  const contract = new Contract(ABIS.FuelABI, poolContract, provider);
 
   const parsedEvent =
     contract.parseEvents(txReceipt)[0]['atemu::fuel::fuel::Fuel::JoiningPool'];
@@ -113,6 +114,7 @@ export const decodeJoinningPool = (
     player: formattedContractAddress(
       num.toHex(parsedEvent.player as BigNumberish),
     ),
+    poolContract,
     poolId: Number((parsedEvent.poolId as bigint).toString()),
     stakedAmount: Number((parsedEvent.stakedAmount as bigint).toString()),
     joinedAt: timestamp,
@@ -123,6 +125,7 @@ export const decodeJoinningPool = (
 
 export type ClaimRewardsReturnValue = {
   poolId: number;
+  poolContract: string;
   winner: string;
   totalPoints: number;
   cardAddress: string;
@@ -135,11 +138,10 @@ export const decodeClaimRewards = (
   provider: Provider,
   timestamp: number,
 ) => {
-  const contract = new Contract(
-    ABIS.FuelABI,
-    formattedContractAddress(txReceipt.events[0].from_address),
-    provider,
+  const poolContract = formattedContractAddress(
+    txReceipt.events[0].from_address,
   );
+  const contract = new Contract(ABIS.FuelABI, poolContract, provider);
 
   const parsedEvent =
     contract.parseEvents(txReceipt)[0]['atemu::fuel::fuel::Fuel::ClaimReward'];
@@ -147,6 +149,7 @@ export const decodeClaimRewards = (
 
   const returnValue: ClaimRewardsReturnValue = {
     poolId: Number((parsedEvent.poolId as bigint).toString()),
+    poolContract,
     winner: formattedContractAddress(
       num.toHex(parsedEvent.winner as BigNumberish),
     ),

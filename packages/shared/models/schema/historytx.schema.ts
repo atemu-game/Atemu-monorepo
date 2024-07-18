@@ -28,6 +28,12 @@ export class HistoryTx extends BaseSchema {
   to?: UserDocument;
 
   @Prop()
+  poolContract?: string;
+
+  @Prop()
+  poolId?: number;
+
+  @Prop()
   amountPoints: number;
 
   @Prop()
