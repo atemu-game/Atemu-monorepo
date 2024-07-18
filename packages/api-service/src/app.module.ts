@@ -10,6 +10,7 @@ import { ConfigModule } from '@nestjs/config';
 import { BliztModule } from './blizt/blizt.module';
 import { SystemModule } from './system/system.module';
 import { LeadboardModule } from './leaderboard/leaderboard.module';
+import { FuelModule } from './fuel/fuel.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { LeadboardModule } from './leaderboard/leaderboard.module';
     AuthModule,
     WalletModule,
     BliztModule,
+    FuelModule,
     SystemModule,
     LeadboardModule,
     MongooseModule.forRoot(configuration().DB_PATH),

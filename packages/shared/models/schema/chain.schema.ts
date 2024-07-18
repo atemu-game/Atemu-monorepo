@@ -24,6 +24,9 @@ export class Chains extends BaseSchema {
   fuelContracts: string[];
 
   @Prop()
+  currentFuelContract: string;
+
+  @Prop()
   cardsContract: string;
 }
 

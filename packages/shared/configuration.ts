@@ -12,6 +12,7 @@ export default () => ({
   ONCHAIN_QUEUE_PORT: Number(process.env.ONCHAIN_QUEUE_PORT) || 8089,
   ONCHAIN_WORKER_PORT: Number(process.env.ONCHAIN_WORKER_PORT) || 8090,
   OFFCHAIN_WORKER_PORT: Number(process.env.OFFCHAIN_WORKER_PORT) || 8091,
+  FUEL_GATEWAY_PORT: Number(process.env.FUEL_GATEWAY_PORT) || 8092,
 
   // JWT Setup
   JWT_SECRET: String(process.env.JWT_SECRET),
