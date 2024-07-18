@@ -95,7 +95,7 @@ export class FuelService {
   }
 
   private setWinner(): UserDocument {
-    let ranges: { user: UserDocument; start: number; end: number }[] = [];
+    const ranges: { user: UserDocument; start: number; end: number }[] = [];
     let start = 0;
 
     this.currentJoinedPool.forEach((entry) => {
