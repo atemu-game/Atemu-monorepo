@@ -23,6 +23,9 @@ export class FuelPool extends BaseSchema {
   winner?: UserDocument;
 
   @Prop({ default: false })
+  isClaimed?: boolean;
+
+  @Prop({ default: false })
   isCanceled?: boolean;
 }
 
