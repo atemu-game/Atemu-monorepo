@@ -1,20 +1,17 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { BaseResult, BaseResultPagination } from '@app/shared/types';
 import { Injectable } from '@nestjs/common';
-import {
-  UserPoints,
-  UserPointsDocument,
-} from '@app/shared/models/schema/userpoints.schema';
 import { Model } from 'mongoose';
 import { LeaderBoardFilterParams } from './types';
 import { UserPointsDTO } from '@app/shared/models/dtos/userpoints.dto';
 import { PaginationDto } from '@app/shared/types/pagination.dto';
 import { formattedContractAddress } from '@app/shared/utils';
+import { UserDocument, Users } from '@app/shared/models';
 @Injectable()
 export class LeaderboardService {
   constructor(
-    @InjectModel(UserPoints.name)
-    private userPointModel: Model<UserPointsDocument>,
+    @InjectModel(Users.name)
+    private userPointModel: Model<UserDocument>,
   ) {}
   async getLeaderboard(query: LeaderBoardFilterParams) {
     const result = new BaseResultPagination<UserPointsDTO>();
@@ -25,28 +22,34 @@ export class LeaderboardService {
       result.data = new PaginationDto([], count, query.page, query.size);
       return result;
     }
-    const items = await this.userPointModel
-      .find(filter)
-      .sort({ points: -1 })
-      .skip(query.skipIndex)
-      .limit(query.size)
-      .exec();
-    result.data = new PaginationDto(items, count, query.size, query.page);
+    const items = await this.userPointModel.find(
+      filter,
+      {
+        address: 1,
+        points: 1,
+        updatedAt: 1,
+        avatar: 1,
+        isVerified: 1,
+        username: 1,
+        createdAt: 1,
+      },
+      {
+        sort: { points: -1, createdAt: 1 },
+        skip: query.skipIndex,
+        limit: query.size,
+      },
+    );
+
+    result.data = new PaginationDto(items, count, query.page, query.size);
     return result;
   }
 
   async getLeaderboardByAddress(address: string) {
     const formataddress = formattedContractAddress(address);
-    const pipeline = [
+
+    const result = await this.userPointModel.aggregate([
       {
-        $addFields: {
-          isTargetUser: {
-            $cond: [{ $eq: ['$address', formataddress] }, true, false],
-          },
-        },
-      },
-      {
-        $sort: { points: -1 } as Record<string, -1 | 1>,
+        $sort: { points: -1, createdAt: 1 },
       },
       {
         $group: {
@@ -55,21 +58,22 @@ export class LeaderboardService {
         },
       },
       {
-        $project: {
-          users: 1,
-          targetUserIndex: {
-            $indexOfArray: ['$users.isTargetUser', true],
-          },
+        $unwind: {
+          path: '$users',
+          includeArrayIndex: 'rank',
         },
       },
       {
-        $project: {
-          rank: { $add: ['$targetUserIndex', 1] },
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: ['$users', { rank: { $add: ['$rank', 1] } }],
+          },
         },
       },
-    ];
+      { $match: { address: formataddress } },
+      { $project: { _id: 0, address: 1, points: 1, rank: 1 } },
+    ]);
 
-    const result = await this.userPointModel.aggregate(pipeline);
     const rank = result.length > 0 ? result[0].rank : undefined;
     return new BaseResult(rank);
   }

@@ -1,18 +1,13 @@
 import { MongooseModule } from '@nestjs/mongoose';
 import { Module } from '@nestjs/common';
 import { UsersModule } from '../user/user.module';
-import {
-  UserPoints,
-  UserPointsSchema,
-} from '@app/shared/models/schema/userpoints.schema';
 import { LeaderboardService } from './leaderboard.service';
 import { LeaderboardController } from './leaderboard.controller';
+import { UserSchema, Users } from '@app/shared/models';
 @Module({
   imports: [
     UsersModule,
-    MongooseModule.forFeature([
-      { name: UserPoints.name, schema: UserPointsSchema },
-    ]),
+    MongooseModule.forFeature([{ name: Users.name, schema: UserSchema }]),
   ],
   controllers: [LeaderboardController],
   providers: [LeaderboardService],
