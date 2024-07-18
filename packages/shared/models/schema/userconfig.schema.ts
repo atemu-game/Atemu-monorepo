@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { BaseSchema } from './base.schema';
-export type ConfigDocument = Document;
+export type UserConfigDocument = Document & UserConfig;
 
 @Schema({
   collection: 'userconfigs',

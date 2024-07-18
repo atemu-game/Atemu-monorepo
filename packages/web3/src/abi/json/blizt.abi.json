@@ -5,6 +5,20 @@
     "interface_name": "atemu::interfaces::point::IPointPool"
   },
   {
+    "name": "core::integer::u256",
+    "type": "struct",
+    "members": [
+      {
+        "name": "low",
+        "type": "core::integer::u128"
+      },
+      {
+        "name": "high",
+        "type": "core::integer::u128"
+      }
+    ]
+  },
+  {
     "name": "core::bool",
     "type": "enum",
     "variants": [
@@ -32,7 +46,7 @@
           },
           {
             "name": "amount",
-            "type": "core::integer::u128"
+            "type": "core::integer::u256"
           },
           {
             "name": "timestamp",
@@ -56,7 +70,7 @@
           },
           {
             "name": "amount",
-            "type": "core::integer::u128"
+            "type": "core::integer::u256"
           }
         ],
         "outputs": [],
@@ -91,6 +105,78 @@
         "state_mutability": "external"
       },
       {
+        "name": "transfer",
+        "type": "function",
+        "inputs": [
+          {
+            "name": "recipient",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "name": "transferFrom",
+        "type": "function",
+        "inputs": [
+          {
+            "name": "sender",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "recipient",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "name": "approve",
+        "type": "function",
+        "inputs": [
+          {
+            "name": "spender",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "name": "allowance",
+        "type": "function",
+        "inputs": [
+          {
+            "name": "owner",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "spender",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
         "name": "getUserPoint",
         "type": "function",
         "inputs": [
@@ -101,7 +187,7 @@
         ],
         "outputs": [
           {
-            "type": "core::integer::u128"
+            "type": "core::integer::u256"
           }
         ],
         "state_mutability": "view"
@@ -118,6 +204,20 @@
         "state_mutability": "view"
       }
     ]
+  },
+  {
+    "name": "pause",
+    "type": "function",
+    "inputs": [],
+    "outputs": [],
+    "state_mutability": "external"
+  },
+  {
+    "name": "unpause",
+    "type": "function",
+    "inputs": [],
+    "outputs": [],
+    "state_mutability": "external"
   },
   {
     "name": "OwnableImpl",
@@ -209,12 +309,34 @@
       {
         "kind": "data",
         "name": "point",
-        "type": "core::integer::u128"
+        "type": "core::integer::u256"
       },
       {
         "kind": "data",
         "name": "timestamp",
         "type": "core::integer::u64"
+      }
+    ]
+  },
+  {
+    "kind": "struct",
+    "name": "atemu::point::point::Point::TransferPoint",
+    "type": "event",
+    "members": [
+      {
+        "kind": "key",
+        "name": "from",
+        "type": "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        "kind": "key",
+        "name": "to",
+        "type": "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        "kind": "data",
+        "name": "value",
+        "type": "core::integer::u256"
       }
     ]
   },
@@ -325,6 +447,11 @@
         "kind": "nested",
         "name": "AddPoint",
         "type": "atemu::point::point::Point::AddPoint"
+      },
+      {
+        "kind": "nested",
+        "name": "TransferPoint",
+        "type": "atemu::point::point::Point::TransferPoint"
       },
       {
         "kind": "flat",

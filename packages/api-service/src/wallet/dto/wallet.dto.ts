@@ -37,7 +37,7 @@ export class RspWalletDTO {
   @ApiProperty()
   feeType: TokenType;
   @ApiProperty()
-  feeDeploy: number;
+  feeDeploy: string;
   @ApiProperty()
   privateKey: string;
   @ApiProperty()

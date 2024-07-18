@@ -79,14 +79,9 @@ export class AuthService {
         signature,
       );
 
-      // const result1 = ec.starkCurve.verify(signature, msgHash, publicKey);
-
-      // console.log('Why Result', result);
-      // console.log('Result ', BigNumberishToText(result));
-      // return result1;
-
       return convertDataIntoString(result);
     } catch (error) {
+      console.log('Error ', error);
       throw new Error(error);
     }
   }
@@ -108,8 +103,11 @@ export class AuthService {
         formattedContractAddress(address),
       );
     }
+
     const token = await this.generateToken(accessPayload);
+
     await this.userService.updateRandomNonce(address);
+
     return {
       token: token,
     };
