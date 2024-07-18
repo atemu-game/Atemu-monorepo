@@ -79,12 +79,6 @@ export class AuthService {
         signature,
       );
 
-      // const result1 = ec.starkCurve.verify(signature, msgHash, publicKey);
-
-      // console.log('Why Result', result);
-      // console.log('Result ', BigNumberishToText(result));
-      // return result1;
-
       return convertDataIntoString(result);
     } catch (error) {
       console.log('Error ', error);
