@@ -51,7 +51,9 @@ export class FuelService {
   private sendTotalOnlineClient(socket: FuelGatewayType) {
     socket.client.emit(FuelEvents.TOTAL_ONLINE, this.sockets.length);
   }
-
+  private sendCurrentTotalPoint(socket: FuelGatewayType, point: number) {
+    socket.client.emit(FuelEvents.TOTAL_POINT, point);
+  }
   private async sendWinner(socket: FuelGatewayType, winner: UserDocument) {
     socket.client.emit(FuelEvents.WINNER, winner);
   }
@@ -85,6 +87,7 @@ export class FuelService {
     await Promise.all(
       this.sockets.map(async (sk) => {
         this.sendCurrentJoinedPool(sk);
+        this.sendCurrentTotalPoint(sk, this.totalStakedPoint);
       }),
     );
   }
@@ -177,6 +180,7 @@ export class FuelService {
 
     this.sendTotalOnlineClient(existedClient);
     this.sendCurrentPool(existedClient);
+    this.sendCurrentTotalPoint(existedClient, this.totalStakedPoint);
     this.sendCurrentJoinedPool(existedClient);
   }
 
