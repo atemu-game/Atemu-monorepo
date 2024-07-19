@@ -34,6 +34,7 @@ export type BliztParam = {
   status: BliztSatus;
   point: number;
   balance: number;
+  address: string;
 };
 @Injectable()
 export class BliztService {
@@ -66,14 +67,36 @@ export class BliztService {
     });
   }
 
+  async handleReconnectBlizt(socket: Socket, userAddress: string) {
+    const formatAddress = formattedContractAddress(userAddress);
+    // Check If Exist Client Address
+    const autoBlizt = this.sockets.find(
+      (client) => client.address === formatAddress,
+    );
+    if (autoBlizt) {
+      autoBlizt.socket = socket;
+      const client = {
+        socket,
+        status: autoBlizt.status,
+        point: autoBlizt.point,
+        address: formatAddress,
+        balance: autoBlizt.balance,
+      };
+      console.log('Current Stattus', autoBlizt);
+      this.sendBliztStatus(client);
+      this.sendBliztBalance(client);
+    }
+  }
+
   async startBlizt(socket: Socket, userAddress: string, rpc: string) {
     let client = this.sockets.find((client) => client.socket === socket);
     if (client && client.status == 'started') {
-      // throw new WsException('Client already exists Working');
       socket.emit('error', 'Client already exists Working');
       return;
     }
+
     const formatAddress = formattedContractAddress(userAddress);
+
     const point = await this.getUserPoint(userAddress);
     const userExist = await this.userService.getUser(formatAddress);
     if (!userExist.mappingAddress) {
@@ -101,10 +124,12 @@ export class BliztService {
           provider,
         );
         currentBalance = formatBalance(currentBalance, 18);
+
         client = {
           socket,
           status: 'starting',
           point: point,
+          address: formatAddress,
           balance: currentBalance,
         };
         this.sockets.push(client);
@@ -198,6 +223,7 @@ export class BliztService {
         if (currentBalance < formatBalance(estimatedFeeMint, 18)) {
           client.status = 'balance_low';
           this.sendBliztStatus(client);
+          this.disconnectBlizt(socket);
           break;
         }
 

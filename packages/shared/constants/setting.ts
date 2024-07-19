@@ -19,3 +19,8 @@ export enum ChainName {
   SN_MAIN = 'SN_MAIN',
   SN_SEPOLIA = 'SN_SEPOLIA',
 }
+
+export enum TypeOfInviteCode {
+  NORMAL = 'NORMAL',
+  PARTNER = 'PARTNER',
+}

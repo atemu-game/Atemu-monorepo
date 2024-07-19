@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Socket } from 'socket.io';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -37,6 +37,9 @@ export class FuelService {
     private readonly chainModel: Model<ChainDocument>,
   ) {}
 
+  logger = new Logger(FuelService.name);
+  isFinishedSetWinner = true;
+
   private sendCurrentPool(socket: FuelGatewayType) {
     socket.client.emit(FuelEvents.CURRENT_POOL, this.currentPool);
   }
@@ -48,7 +51,9 @@ export class FuelService {
   private sendTotalOnlineClient(socket: FuelGatewayType) {
     socket.client.emit(FuelEvents.TOTAL_ONLINE, this.sockets.length);
   }
-
+  private sendCurrentTotalPoint(socket: FuelGatewayType, point: number) {
+    socket.client.emit(FuelEvents.TOTAL_POINT, point);
+  }
   private async sendWinner(socket: FuelGatewayType, winner: UserDocument) {
     socket.client.emit(FuelEvents.WINNER, winner);
   }
@@ -82,6 +87,7 @@ export class FuelService {
     await Promise.all(
       this.sockets.map(async (sk) => {
         this.sendCurrentJoinedPool(sk);
+        this.sendCurrentTotalPoint(sk, this.totalStakedPoint);
       }),
     );
   }
@@ -95,7 +101,7 @@ export class FuelService {
   }
 
   private setWinner(): UserDocument {
-    let ranges: { user: UserDocument; start: number; end: number }[] = [];
+    const ranges: { user: UserDocument; start: number; end: number }[] = [];
     let start = 0;
 
     this.currentJoinedPool.forEach((entry) => {
@@ -171,8 +177,10 @@ export class FuelService {
 
       this.sockets.push(existedClient);
     }
+
     this.sendTotalOnlineClient(existedClient);
     this.sendCurrentPool(existedClient);
+    this.sendCurrentTotalPoint(existedClient, this.totalStakedPoint);
     this.sendCurrentJoinedPool(existedClient);
   }
 
@@ -219,8 +227,16 @@ export class FuelService {
 
   @Cron(CronExpression.EVERY_SECOND)
   async handleSetWinner() {
+    if (!this.isFinishedSetWinner) {
+      return;
+    }
+    this.isFinishedSetWinner = false;
     const now = Date.now();
-    if (this.currentPool && now >= this.currentPool.endAt) {
+
+    if (
+      !this.currentPool ||
+      (this.currentPool && now >= this.currentPool.endAt)
+    ) {
       if (this.currentJoinedPool.length > 3) {
         const winner = this.setWinner();
         await this.fuelPoolModel.findOneAndUpdate(
@@ -252,9 +268,15 @@ export class FuelService {
         {
           contractAddress: this.chainDocument.currentFuelContract,
           entrypoint: 'manuallyCreatePool',
+          calldata: [],
         },
       ]);
       await provider.waitForTransaction(executeNewPool.transaction_hash);
+      this.logger.debug(
+        `New Pool Created with tx: ${executeNewPool.transaction_hash}`,
+      );
+
+      this.isFinishedSetWinner = true;
     }
   }
 }
