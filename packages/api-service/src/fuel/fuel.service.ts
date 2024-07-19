@@ -15,6 +15,7 @@ import {
 import { Model } from 'mongoose';
 import { Account, RpcProvider } from 'starknet';
 import configuration from '@app/shared/configuration';
+import { delay } from '@app/shared/utils/promise';
 
 export type FuelGatewayType = {
   client: Socket;
@@ -225,57 +226,64 @@ export class FuelService {
     }
   }
 
-  @Cron(CronExpression.EVERY_SECOND)
+  @Cron(CronExpression.EVERY_5_SECONDS)
   async handleSetWinner() {
-    if (!this.isFinishedSetWinner) {
-      return;
-    }
-    this.isFinishedSetWinner = false;
-    const now = Date.now();
+    try {
+      if (!this.isFinishedSetWinner) {
+        return;
+      }
+      this.isFinishedSetWinner = false;
+      const now = Date.now();
 
-    if (
-      !this.currentPool ||
-      (this.currentPool && now >= this.currentPool.endAt)
-    ) {
-      if (this.currentJoinedPool.length > 3) {
-        const winner = this.setWinner();
-        await this.fuelPoolModel.findOneAndUpdate(
-          {
-            address: this.chainDocument.currentFuelContract,
-            id: this.currentPool.id,
-          },
-          {
-            $set: {
-              winner,
+      if (
+        !this.currentPool ||
+        (this.currentPool && now >= this.currentPool.endAt)
+      ) {
+        if (this.currentJoinedPool.length > 3) {
+          const winner = this.setWinner();
+          await this.fuelPoolModel.findOneAndUpdate(
+            {
+              address: this.chainDocument.currentFuelContract,
+              id: this.currentPool.id,
             },
-          },
+            {
+              $set: {
+                winner,
+              },
+            },
+            {
+              new: true,
+            },
+          );
+
+          await this.sendAllWinner(winner);
+        }
+
+        // TODO start new pool
+        const provider = new RpcProvider({ nodeUrl: this.chainDocument.rpc });
+        const drawerAccount = new Account(
+          provider,
+          configuration().ACCOUNT_ADDRESS,
+          configuration().PRIVATE_KEY,
+        );
+        const executeNewPool = await drawerAccount.execute([
           {
-            new: true,
+            contractAddress: this.chainDocument.currentFuelContract,
+            entrypoint: 'manuallyCreatePool',
+            calldata: [],
           },
+        ]);
+        await provider.waitForTransaction(executeNewPool.transaction_hash);
+        this.logger.debug(
+          `New Pool Created with tx: ${executeNewPool.transaction_hash}`,
         );
 
-        await this.sendAllWinner(winner);
+        await delay(1);
+        await this.handlUpdatePool();
       }
-
-      // TODO start new pool
-      const provider = new RpcProvider({ nodeUrl: this.chainDocument.rpc });
-      const drawerAccount = new Account(
-        provider,
-        configuration().ACCOUNT_ADDRESS,
-        configuration().PRIVATE_KEY,
-      );
-      const executeNewPool = await drawerAccount.execute([
-        {
-          contractAddress: this.chainDocument.currentFuelContract,
-          entrypoint: 'manuallyCreatePool',
-          calldata: [],
-        },
-      ]);
-      await provider.waitForTransaction(executeNewPool.transaction_hash);
-      this.logger.debug(
-        `New Pool Created with tx: ${executeNewPool.transaction_hash}`,
-      );
-
+      this.isFinishedSetWinner = true;
+    } catch (error) {
+    } finally {
       this.isFinishedSetWinner = true;
     }
   }
