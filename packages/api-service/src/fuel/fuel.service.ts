@@ -171,6 +171,7 @@ export class FuelService {
 
       this.sockets.push(existedClient);
     }
+
     this.sendTotalOnlineClient(existedClient);
     this.sendCurrentPool(existedClient);
     this.sendCurrentJoinedPool(existedClient);

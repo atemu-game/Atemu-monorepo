@@ -7,12 +7,14 @@ config({ path: '../../.env' });
 export default () => ({
   // PATH Setup
   DB_PATH: String(process.env.DB_PATH),
-  API_PORT: Number(process.env.API_PORT) || 8088,
-  SOCKET_PORT: Number(process.env.SOCKET_PORT) || 8000,
+  // API Port
+  API_PORT: Number(process.env.API_PORT) || 8000,
+  BLIZT_GATEWAY_PORT: Number(process.env.BLIZT_GATEWAY_PORT) || 5050,
+  FUEL_GATEWAY_PORT: Number(process.env.FUEL_GATEWAY_PORT) || 5051,
+  // ONCHAIN Setup
   ONCHAIN_QUEUE_PORT: Number(process.env.ONCHAIN_QUEUE_PORT) || 8089,
   ONCHAIN_WORKER_PORT: Number(process.env.ONCHAIN_WORKER_PORT) || 8090,
   OFFCHAIN_WORKER_PORT: Number(process.env.OFFCHAIN_WORKER_PORT) || 8091,
-  FUEL_GATEWAY_PORT: Number(process.env.FUEL_GATEWAY_PORT) || 8092,
 
   // JWT Setup
   JWT_SECRET: String(process.env.JWT_SECRET),

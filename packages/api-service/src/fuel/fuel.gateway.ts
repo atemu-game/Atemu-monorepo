@@ -3,11 +3,9 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
-  SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Socket } from 'socket.io';
 import { FuelService } from './fuel.service';
 
 @WebSocketGateway(configuration().FUEL_GATEWAY_PORT, {

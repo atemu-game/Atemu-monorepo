@@ -82,6 +82,7 @@ export class BliztService {
         address: formatAddress,
         balance: autoBlizt.balance,
       };
+      console.log('Current Stattus', autoBlizt);
       this.sendBliztStatus(client);
       this.sendBliztBalance(client);
     }

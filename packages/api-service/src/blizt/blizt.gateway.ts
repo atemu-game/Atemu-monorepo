@@ -13,7 +13,7 @@ import {
 import { BliztService } from './blizt.service';
 
 @UseGuards(WsAuthGuard)
-@WebSocketGateway(configuration().SOCKET_PORT, {
+@WebSocketGateway(configuration().BLIZT_GATEWAY_PORT, {
   cors: {
     origin: '*',
   },
