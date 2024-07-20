@@ -9,12 +9,17 @@ import { HistoryTxType } from '@app/shared/constants/setting';
   timestamps: true,
 })
 export class HistoryTx extends BaseSchema {
-  @Prop({
-    unique: true,
-  })
-  txHash: string;
   @Prop()
-  tokenId: number;
+  txHash: string;
+
+  @Prop()
+  index: number;
+
+  @Prop()
+  cardAddress?: string;
+
+  @Prop()
+  cardId?: string;
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Users' })
   from: UserDocument;
@@ -23,7 +28,16 @@ export class HistoryTx extends BaseSchema {
   to?: UserDocument;
 
   @Prop()
-  amount: number;
+  poolContract?: string;
+
+  @Prop()
+  poolId?: number;
+
+  @Prop()
+  amountPoints: number;
+
+  @Prop()
+  amountCards: number;
 
   @Prop()
   timestamp: number;
@@ -36,3 +50,4 @@ export class HistoryTx extends BaseSchema {
 }
 
 export const HistoryTxChema = SchemaFactory.createForClass(HistoryTx);
+HistoryTxChema.index({ txHash: 1, index: 1 }, { unique: true });

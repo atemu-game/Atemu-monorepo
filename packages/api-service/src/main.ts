@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import configuration from '@app/shared/configuration';
 
 import { configureValidation, configureSwagger } from '@app/shared/config';
+// import { AppClusterService } from '@app/shared/modules/cluster/app_cluster.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,4 +18,5 @@ async function bootstrap() {
     console.log(`Atemu api service is running on port ${PORT}`);
   });
 }
+// AppClusterService.clusterize(bootstrap);
 bootstrap();

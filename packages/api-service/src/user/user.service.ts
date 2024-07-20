@@ -1,5 +1,10 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { UserConfig, UserDocument, Users } from '@app/shared/models';
+import {
+  UserConfig,
+  UserConfigDocument,
+  UserDocument,
+  Users,
+} from '@app/shared/models';
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { Model } from 'mongoose';
 
@@ -9,8 +14,9 @@ import { formattedContractAddress } from '@app/shared/utils';
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(Users.name) private userModel: Model<Users>,
-    @InjectModel(UserConfig.name) private userConfigModel: Model<UserConfig>,
+    @InjectModel(Users.name) private userModel: Model<UserDocument>,
+    @InjectModel(UserConfig.name)
+    private userConfigModel: Model<UserConfigDocument>,
   ) {}
 
   async getOrCreateUser(userAddress: string): Promise<UserDocument> {
@@ -67,13 +73,16 @@ export class UserService {
       const result = await this.userConfigModel.create(newUserRPC);
       return result;
     }
+    if (user.rpcPublicStore.length >= 5) {
+      throw new BadRequestException('Max RPC is 5');
+    }
     if (user.rpcPublicStore.includes(rpc)) {
       throw new BadRequestException('RPC already exists in Config');
     }
     const userRPC = await this.userConfigModel
       .findOneAndUpdate(
         { address: formatAddress },
-        { $set: { rpcPublicStore: rpc } },
+        { $push: { rpcPublicStore: rpc } },
         { new: true },
       )
       .exec();

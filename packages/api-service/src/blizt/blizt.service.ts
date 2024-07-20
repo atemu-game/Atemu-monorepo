@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import { WsException } from '@nestjs/websockets';
+
 import { Injectable } from '@nestjs/common';
 import {
   decryptData,
@@ -34,6 +34,7 @@ export type BliztParam = {
   status: BliztSatus;
   point: number;
   balance: number;
+  address: string;
 };
 @Injectable()
 export class BliztService {
@@ -66,58 +67,86 @@ export class BliztService {
     });
   }
 
+  async handleReconnectBlizt(socket: Socket, userAddress: string) {
+    const formatAddress = formattedContractAddress(userAddress);
+    // Check If Exist Client Address
+    const autoBlizt = this.sockets.find(
+      (client) => client.address === formatAddress,
+    );
+    if (autoBlizt) {
+      autoBlizt.socket = socket;
+      const client = {
+        socket,
+        status: autoBlizt.status,
+        point: autoBlizt.point,
+        address: formatAddress,
+        balance: autoBlizt.balance,
+      };
+      console.log('Current Stattus', autoBlizt);
+      this.sendBliztStatus(client);
+      this.sendBliztBalance(client);
+    }
+  }
+
   async startBlizt(socket: Socket, userAddress: string, rpc: string) {
     let client = this.sockets.find((client) => client.socket === socket);
     if (client && client.status == 'started') {
-      throw new WsException('Client already exists Working');
+      socket.emit('error', 'Client already exists Working');
+      return;
     }
+
     const formatAddress = formattedContractAddress(userAddress);
+
     const point = await this.getUserPoint(userAddress);
     const userExist = await this.userService.getUser(formatAddress);
     if (!userExist.mappingAddress) {
-      throw new WsException('Client not have creator account');
+      socket.emit('error', 'Client not have creator account');
+      return;
     }
 
     const payerAddress = formattedContractAddress(
       userExist.mappingAddress.address,
     );
     const decodePrivateKey = decryptData(userExist.mappingAddress.privateKey);
-    const provider = new Provider({ nodeUrl: rpc });
-    const accountUser = new Account(provider, payerAddress, decodePrivateKey);
+    try {
+      if (client && client.status === 'stopping') {
+        client.status = 'stopped';
+        this.sendBliztStatus(client);
+        return;
+      }
+      const provider = new Provider({ nodeUrl: rpc });
 
-    if (client && client.status === 'stopping') {
-      client.status = 'stopped';
-      this.sendBliztStatus(client);
-      return;
-    }
-    if (!client) {
-      let currentBalance = await this.walletService.getBalanceEth(
-        accountUser,
+      const accountUser = new Account(provider, payerAddress, decodePrivateKey);
+
+      if (!client) {
+        let currentBalance = await this.walletService.getBalanceEth(
+          accountUser,
+          provider,
+        );
+        currentBalance = formatBalance(currentBalance, 18);
+
+        client = {
+          socket,
+          status: 'starting',
+          point: point,
+          address: formatAddress,
+          balance: currentBalance,
+        };
+        this.sockets.push(client);
+      }
+      client.status = 'starting';
+
+      // Now Account Blizt
+      const accountBlizt = new Account(
         provider,
+        configuration().ACCOUNT_ADDRESS,
+        configuration().PRIVATE_KEY,
       );
-      currentBalance = formatBalance(currentBalance, 18);
-      client = {
-        socket,
-        status: 'starting',
-        point: point,
-        balance: currentBalance,
-      };
-      this.sockets.push(client);
-    }
-    client.status = 'starting';
 
-    // Now Account Blizt
-    const accountBlizt = new Account(
-      provider,
-      configuration().ACCOUNT_ADDRESS,
-      configuration().PRIVATE_KEY,
-    );
-
-    client.status = 'started';
-    this.sendBliztStatus(client);
-    this.sendBliztBalance(client);
-    while (client.status == 'started') {
-      try {
+      client.status = 'started';
+      this.sendBliztStatus(client);
+      this.sendBliztBalance(client);
+      while (client.status == 'started') {
         if (client.status !== 'started') break;
 
         const timestampSetup = (new Date().getTime() / 1e3).toFixed(0);
@@ -179,7 +208,7 @@ export class BliztService {
           provider,
         );
         currentBalance = formatBalance(currentBalance, 18);
-
+        client.balance = currentBalance;
         const { suggestedMaxFee: estimatedFeeMint } =
           await accountBlizt.estimateInvokeFee({
             contractAddress: COMMON_CONTRACT_ADDRESS.BLIZT,
@@ -192,9 +221,9 @@ export class BliztService {
             }),
           });
         if (currentBalance < formatBalance(estimatedFeeMint, 18)) {
-          console.log('Insufficient balance');
           client.status = 'balance_low';
           this.sendBliztStatus(client);
+          this.disconnectBlizt(socket);
           break;
         }
 
@@ -215,7 +244,7 @@ export class BliztService {
           accountUser,
           provider,
         );
-
+        client.balance = Number(formatBalance(currentBalance, 18));
         txR.match({
           success: (txR: SuccessfulTransactionReceiptResponse) => {
             console.log('Success =', txR.transaction_hash);
@@ -260,8 +289,10 @@ export class BliztService {
         this.sendBliztPoint(client);
         this.sendBliztStatus(client);
         this.sendBliztBalance(client);
-      } catch (error: any) {
-        console.log(`Error: ${error.message}`);
+      }
+    } catch (error: any) {
+      if (error.message === 'fetch failed') {
+        socket.emit('error', 'RPC InvalidLink URL - Fetch Failed');
       }
     }
   }
@@ -277,6 +308,7 @@ export class BliztService {
   }
 
   async disconnectBlizt(socket: Socket) {
+    this.stopBlizt(socket);
     this.sockets = this.sockets.filter((sk) => sk.socket !== socket);
   }
 

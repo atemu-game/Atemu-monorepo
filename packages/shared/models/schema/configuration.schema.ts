@@ -2,6 +2,7 @@ import { ChainName, ConfigurationName } from '@app/shared/constants/setting';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { IsEnum } from 'class-validator';
 import { Document } from 'mongoose';
+import { BaseSchema } from './base.schema';
 
 export type ConfigurationDocument = Configuration & Document;
 
@@ -17,7 +18,7 @@ export type ConfigurationDocument = Configuration & Document;
     },
   },
 })
-export class Configuration {
+export class Configuration extends BaseSchema {
   @IsEnum(ConfigurationName)
   @Prop()
   configName: ConfigurationName;

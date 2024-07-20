@@ -1,0 +1,8 @@
+{
+  "_id": "ObjectId('13aba')",
+  "explore": "string",
+  "name": "SN_SEPOLIA",
+  "rpc": "https://starknet-sepolia.infura.io/v3/62ab9cb668784c4e912642eb8e5676b8",
+  "delayBlock": 0,
+  "bliztContractAdress": "0x6817f5d84450d8003da63a66b1022d317ff6e3aa6303f8cc800d26cb73693e4"
+}

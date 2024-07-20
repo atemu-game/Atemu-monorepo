@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query, HttpCode } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  HttpCode,
+  BadRequestException,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOkResponse,
@@ -129,10 +137,7 @@ export class AuthController {
         data: data,
       };
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
+      throw new BadRequestException(error.message);
     }
   }
 

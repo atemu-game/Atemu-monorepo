@@ -56,7 +56,7 @@ export class WalletService {
         payerAddress: payerAddress,
         creatorAddress: userExist.address,
         feeType: TokenType.ETH,
-        feeDeploy: parseFloat(formatBalance(dataFeeDeploy.feeDeploy, 18)),
+        feeDeploy: formatBalance(dataFeeDeploy.feeDeploy, 18),
         privateKey: decodePrivateKey,
         deployHash: userExist.mappingAddress.deployHash,
       };
@@ -118,12 +118,13 @@ export class WalletService {
       creatorAddress: userExist.address,
       privateKey: privateKeyAX,
       feeType: TokenType.ETH,
-      feeDeploy: parseFloat(formatBalance(dataFeeDeploy.feeDeploy, 18)),
+      feeDeploy: formatBalance(dataFeeDeploy.feeDeploy, 18),
     };
   }
 
   async deployWalletByEth(creatorAddress: string) {
     const userExist = await this.userService.getUser(creatorAddress);
+
     if (!userExist.mappingAddress) {
       throw new BadRequestException(`User Address argentx not created`);
     }
@@ -417,8 +418,8 @@ export class WalletService {
 
     return {
       payerAddress: payerAddress,
-      balanceEth: balanceEth,
-      balanceStrk: balanceStrk,
+      balanceEth: formatBalance(balanceEth, 18),
+      balanceStrk: formatBalance(balanceStrk, 18),
     };
   }
   async withDrawEth(
@@ -564,35 +565,4 @@ export class WalletService {
 
     return initialStrk.toString();
   }
-
-  // async approveEthBalance(
-  //   accountAx: Account,
-  //   amount: number,
-  //   suggestMaxFee: bigint,
-  //   provider?: Provider,
-  // ) {
-  //   if (!provider) {
-  //     provider = new Provider({ nodeUrl: RPC_PROVIDER.TESTNET });
-  //   }
-
-  //   const contractEth = new Contract(
-  //     ABISErc20.abi,
-  //     COMMON_CONTRACT_ADDRESS.ETH,
-  //     provider,
-  //   );
-  //   // Approve ETH
-  //   // const approveETH = contractEth.populate('approve', [
-  //   //   FLEXDROP_TESTNET,
-  //   //   initialEth,
-  //   // ]);
-  //   const approveETH = await contractEth.approve(FLEX.FLEXDROP_TESTNET, amount);
-  //   const { transaction_hash: txApproveHash } = await accountAx.execute(
-  //     approveETH,
-  //     undefined,
-  //     {
-  //       maxFee: suggestMaxFee * BigInt(2),
-  //     },
-  //   );
-  //   return txApproveHash;
-  // }
 }
