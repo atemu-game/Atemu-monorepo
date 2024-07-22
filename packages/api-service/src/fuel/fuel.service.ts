@@ -1,9 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Socket } from 'socket.io';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { FuelEvents } from '@app/shared/constants';
 import {
+  CardCollectionDocument,
+  CardCollections,
   ChainDocument,
   Chains,
   FuelPool,
@@ -11,14 +13,32 @@ import {
   JoinFuelPool,
   JoinFuelPoolDocument,
   UserDocument,
+  Users,
 } from '@app/shared/models';
 import { Model } from 'mongoose';
 import { Account, RpcProvider } from 'starknet';
 import configuration from '@app/shared/configuration';
 import { delay } from '@app/shared/utils/promise';
+import { QueryWinningHistoryDto } from './dto/winningHistory.dto';
+import { BaseResultPagination } from '@app/shared/types';
+import {
+  formattedContractAddress,
+  isValidAddress,
+  isValidObjectId,
+} from '@app/shared/utils';
+import { UserService } from '../user/user.service';
+import { PaginationDto } from '@app/shared/types/pagination.dto';
 
 export type FuelGatewayType = {
   client: Socket;
+};
+
+export type WinnerParam = {
+  winner: UserDocument;
+  cardId: string;
+  cardContract: string;
+  cardCollection: CardCollectionDocument;
+  amountOfCards: number;
 };
 
 @Injectable()
@@ -36,6 +56,9 @@ export class FuelService {
     private readonly joinFuelPoolModel: Model<JoinFuelPoolDocument>,
     @InjectModel(Chains.name)
     private readonly chainModel: Model<ChainDocument>,
+    @InjectModel(CardCollections.name)
+    private readonly cardCollectionModel: Model<CardCollectionDocument>,
+    private userService: UserService,
   ) {}
 
   logger = new Logger(FuelService.name);
@@ -55,7 +78,7 @@ export class FuelService {
   private sendCurrentTotalPoint(socket: FuelGatewayType, point: number) {
     socket.client.emit(FuelEvents.TOTAL_POINT, point);
   }
-  private async sendWinner(socket: FuelGatewayType, winner: UserDocument) {
+  private async sendWinner(socket: FuelGatewayType, winner: WinnerParam) {
     socket.client.emit(FuelEvents.WINNER, winner);
   }
 
@@ -93,7 +116,7 @@ export class FuelService {
     );
   }
 
-  private async sendAllWinner(winner: UserDocument) {
+  private async sendAllWinner(winner: WinnerParam) {
     await Promise.all(
       this.sockets.map(async (sk) => {
         this.sendWinner(sk, winner);
@@ -189,17 +212,60 @@ export class FuelService {
     this.sockets = this.sockets.filter((sk) => sk.client !== client);
   }
 
-  @Cron(CronExpression.EVERY_5_SECONDS)
+  async getHistoryWinning(
+    query: QueryWinningHistoryDto,
+  ): Promise<BaseResultPagination<FuelPoolDocument>> {
+    const { page, size, skipIndex } = query;
+    const result = new BaseResultPagination<FuelPoolDocument>();
+
+    const user = query.user;
+    const filter: any = {};
+    filter.winner = { $ne: null };
+
+    if (user) {
+      if (isValidObjectId(user)) {
+        filter.winner = user;
+      } else if (isValidAddress(user)) {
+        const userDocument = await this.userService.getOrCreateUser(user);
+        if (userDocument) {
+          filter.winner = userDocument._id;
+        }
+      } else {
+        throw new HttpException('Invalid user', HttpStatus.BAD_REQUEST);
+      }
+    }
+
+    if (query.isClaimed !== undefined && query.isClaimed !== null) {
+      filter.isClaimed = query.isClaimed;
+    }
+    const total = await this.fuelPoolModel.countDocuments(filter);
+    if (total === 0) {
+      result.data = new PaginationDto([], total, page, size);
+
+      return result;
+    }
+
+    const items = await this.fuelPoolModel.find(
+      filter,
+      {},
+      { sort: { endAt: -1 }, skip: skipIndex, limit: size },
+    );
+    result.data = new PaginationDto(items, total, page, size);
+
+    return result;
+  }
+
+  // @Cron(CronExpression.EVERY_5_SECONDS)
   async getTotalOnlineClient() {
     await this.sendAllTotalOnlineClient();
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  // @Cron(CronExpression.EVERY_10_SECONDS)
   async getCurrentPool() {
     await this.sendAllCurrentPool();
   }
 
-  @Cron(CronExpression.EVERY_5_SECONDS)
+  // @Cron(CronExpression.EVERY_5_SECONDS)
   async getCurrentJoinedPool() {
     if (this.currentPool) {
       const currentTotalStaked = await this.joinFuelPoolModel.aggregate([
@@ -226,7 +292,7 @@ export class FuelService {
     }
   }
 
-  @Cron(CronExpression.EVERY_5_SECONDS)
+  // @Cron(CronExpression.EVERY_5_SECONDS)
   async handleSetWinner() {
     try {
       if (!this.isFinishedSetWinner) {
@@ -241,22 +307,29 @@ export class FuelService {
       ) {
         if (this.currentJoinedPool.length > 3) {
           const winner = this.setWinner();
+          const cardCollection = await this.cardCollectionModel.findOne();
+          const winnerParam: WinnerParam = {
+            winner,
+            cardId: '1',
+            cardContract: cardCollection.cardContract,
+            cardCollection,
+            amountOfCards: 1,
+          };
+
           await this.fuelPoolModel.findOneAndUpdate(
             {
               address: this.chainDocument.currentFuelContract,
               id: this.currentPool.id,
             },
             {
-              $set: {
-                winner,
-              },
+              $set: { ...winnerParam },
             },
             {
               new: true,
             },
           );
 
-          await this.sendAllWinner(winner);
+          await this.sendAllWinner(winnerParam);
         }
 
         // TODO start new pool
