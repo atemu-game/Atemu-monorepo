@@ -260,12 +260,12 @@ export class FuelService {
     await this.sendAllTotalOnlineClient();
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  // @Cron(CronExpression.EVERY_10_SECONDS)
   async getCurrentPool() {
     await this.sendAllCurrentPool();
   }
 
-  @Cron(CronExpression.EVERY_5_SECONDS)
+  // @Cron(CronExpression.EVERY_5_SECONDS)
   async getCurrentJoinedPool() {
     if (this.currentPool) {
       const currentTotalStaked = await this.joinFuelPoolModel.aggregate([
@@ -292,7 +292,7 @@ export class FuelService {
     }
   }
 
-  @Cron(CronExpression.EVERY_5_SECONDS)
+  // @Cron(CronExpression.EVERY_5_SECONDS)
   async handleSetWinner() {
     try {
       if (!this.isFinishedSetWinner) {
