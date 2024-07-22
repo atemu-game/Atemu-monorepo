@@ -10,11 +10,12 @@ import { FuelService } from './fuel.service';
 import { QueryWinningHistoryDto } from './dto/winningHistory.dto';
 import { BaseResult, BaseResultPagination } from '@app/shared/types';
 import { FuelPoolDocument } from '@app/shared/models';
-import { JWT } from '@app/shared/modules';
+import { JWT, User } from '@app/shared/modules';
 import {
   ClaimFuelRewardQueryDto,
   ClaimFuelRewardResult,
 } from './dto/claimReward.dto';
+import { iInfoToken } from '@app/shared/modules/jwt/jwt.dto';
 
 @ApiTags('Fuel')
 @ApiExtraModels(BaseResult, ClaimFuelRewardResult)
@@ -59,7 +60,8 @@ export class FuelController {
   })
   async claimReward(
     @Body() query: ClaimFuelRewardQueryDto,
+    @User() user: iInfoToken,
   ): Promise<BaseResult<ClaimFuelRewardResult>> {
-    return;
+    return await this.fuelService.getClaimReward(user.sub, query);
   }
 }

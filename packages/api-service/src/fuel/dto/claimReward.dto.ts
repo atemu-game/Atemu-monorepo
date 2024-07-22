@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsHexadecimal } from 'class-validator';
+import { IsNumberString, IsHexadecimal } from 'class-validator';
 
 export class ClaimFuelRewardQueryDto {
   @ApiProperty()
-  @IsString()
+  @IsNumberString()
   poolId: string;
 
   @ApiProperty()

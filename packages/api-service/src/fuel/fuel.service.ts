@@ -16,11 +16,18 @@ import {
   Users,
 } from '@app/shared/models';
 import { Model } from 'mongoose';
-import { Account, RpcProvider } from 'starknet';
+import {
+  Account,
+  RpcProvider,
+  TypedData,
+  shortString,
+  uint256,
+  stark,
+} from 'starknet';
 import configuration from '@app/shared/configuration';
 import { delay } from '@app/shared/utils/promise';
 import { QueryWinningHistoryDto } from './dto/winningHistory.dto';
-import { BaseResultPagination } from '@app/shared/types';
+import { BaseResult, BaseResultPagination } from '@app/shared/types';
 import {
   formattedContractAddress,
   isValidAddress,
@@ -28,6 +35,10 @@ import {
 } from '@app/shared/utils';
 import { UserService } from '../user/user.service';
 import { PaginationDto } from '@app/shared/types/pagination.dto';
+import {
+  ClaimFuelRewardQueryDto,
+  ClaimFuelRewardResult,
+} from './dto/claimReward.dto';
 
 export type FuelGatewayType = {
   client: Socket;
@@ -253,6 +264,97 @@ export class FuelService {
     result.data = new PaginationDto(items, total, page, size);
 
     return result;
+  }
+
+  async getClaimReward(
+    user: string,
+    query: ClaimFuelRewardQueryDto,
+  ): Promise<BaseResult<ClaimFuelRewardResult>> {
+    const { poolContract, poolId } = query;
+    const formattedAddress = formattedContractAddress(poolContract);
+    const userDocument = await this.userService.getOrCreateUser(user);
+
+    const poolDetail = await this.fuelPoolModel.findOne({
+      address: formattedAddress,
+      id: poolId,
+      winner: userDocument,
+    });
+
+    if (!poolDetail) {
+      throw new HttpException('Winning pool not found', HttpStatus.NOT_FOUND);
+    }
+
+    const typedMessage: TypedData = {
+      types: {
+        WinnerStruct: [
+          {
+            name: 'poolId',
+            type: 'u256',
+          },
+          {
+            name: 'winner',
+            type: 'ContractAddress',
+          },
+          {
+            name: 'cardId',
+            type: 'u256',
+          },
+          {
+            name: 'amountCards',
+            type: 'u256',
+          },
+        ],
+        u256: [
+          { name: 'low', type: 'felt' },
+          { name: 'high', type: 'felt' },
+        ],
+        StarkNetDomain: [
+          {
+            name: 'name',
+            type: 'felt',
+          },
+          {
+            name: 'version',
+            type: 'felt',
+          },
+          {
+            name: 'chainId',
+            type: 'felt',
+          },
+        ],
+      },
+      primaryType: 'WinnerStruct',
+      domain: {
+        name: 'atemu',
+        version: '1',
+        chainId: shortString.encodeShortString(configuration().CHAIN_ID),
+      },
+      message: {
+        poolId: uint256.bnToUint256(1),
+        winner: user,
+        cardId: uint256.bnToUint256(1),
+        amountCards: uint256.bnToUint256(1),
+      },
+    };
+
+    const provider = new RpcProvider({ nodeUrl: this.chainDocument.rpc });
+    const drawerAccount = new Account(
+      provider,
+      configuration().ACCOUNT_ADDRESS,
+      configuration().PRIVATE_KEY,
+    );
+    const signature = await drawerAccount.signMessage(typedMessage);
+    const proof = stark.formatSignature(signature);
+
+    const result: ClaimFuelRewardResult = {
+      poolId,
+      poolContract,
+      cardContract: poolDetail.cardContract,
+      cardId: poolDetail.cardId,
+      amountOfCards: poolDetail.amountOfCards,
+      proof,
+    };
+    return new BaseResult(result);
   }
 
   @Cron(CronExpression.EVERY_5_SECONDS)
