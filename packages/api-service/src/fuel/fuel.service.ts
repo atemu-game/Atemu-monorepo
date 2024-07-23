@@ -396,70 +396,81 @@ export class FuelService {
 
   @Cron(CronExpression.EVERY_5_SECONDS)
   async handleSetWinner() {
-    try {
-      if (!this.isFinishedSetWinner) {
-        return;
+    if (!this.isFinishedSetWinner) {
+      return;
+    }
+    this.isFinishedSetWinner = false;
+    const now = Date.now();
+
+    if (
+      !this.currentPool ||
+      (this.currentPool && now >= this.currentPool.endAt)
+    ) {
+      this.logger.log(this.currentPool);
+      if (this.currentJoinedPool.length >= 3) {
+        const winner = this.setWinner();
+
+        const cardCollection = await this.cardCollectionModel.findOne();
+        const winnerParam: WinnerParam = {
+          winner,
+          cardId: '1',
+          cardContract: cardCollection.cardContract,
+          cardCollection,
+          amountOfCards: 1,
+        };
+
+        await this.fuelPoolModel.findOneAndUpdate(
+          {
+            address: this.chainDocument.currentFuelContract,
+            id: this.currentPool.id,
+          },
+          {
+            $set: winnerParam,
+          },
+          {
+            new: true,
+          },
+        );
+
+        await this.sendAllWinner(winnerParam);
       }
-      this.isFinishedSetWinner = false;
-      const now = Date.now();
 
-      if (
-        !this.currentPool ||
-        (this.currentPool && now >= this.currentPool.endAt)
-      ) {
-        if (this.currentJoinedPool.length > 3) {
-          const winner = this.setWinner();
-          const cardCollection = await this.cardCollectionModel.findOne();
-          const winnerParam: WinnerParam = {
-            winner,
-            cardId: '1',
-            cardContract: cardCollection.cardContract,
-            cardCollection,
-            amountOfCards: 1,
-          };
-
-          await this.fuelPoolModel.findOneAndUpdate(
+      // TODO start new pool
+      let isCreateFinished = false;
+      while (!isCreateFinished) {
+        try {
+          const provider = new RpcProvider({ nodeUrl: this.chainDocument.rpc });
+          const drawerAccount = new Account(
+            provider,
+            configuration().ACCOUNT_ADDRESS,
+            configuration().PRIVATE_KEY,
+          );
+          const executeNewPool = await drawerAccount.execute([
             {
-              address: this.chainDocument.currentFuelContract,
-              id: this.currentPool.id,
+              contractAddress: this.chainDocument.currentFuelContract,
+              entrypoint: 'manuallyCreatePool',
+              calldata: [],
             },
-            {
-              $set: { ...winnerParam },
-            },
-            {
-              new: true,
-            },
+          ]);
+          await provider.waitForTransaction(executeNewPool.transaction_hash);
+          this.logger.debug(
+            `New Pool Created with tx: ${executeNewPool.transaction_hash}`,
           );
 
-          await this.sendAllWinner(winnerParam);
+          await delay(5);
+          await this.handlUpdatePool();
+          isCreateFinished = true;
+        } catch (error) {
+          if (
+            !(error.message as string).includes('Previous Pool Not End Yet')
+          ) {
+            this.logger.error(error.message);
+          }
+
+          await delay(1);
         }
-
-        // TODO start new pool
-        const provider = new RpcProvider({ nodeUrl: this.chainDocument.rpc });
-        const drawerAccount = new Account(
-          provider,
-          configuration().ACCOUNT_ADDRESS,
-          configuration().PRIVATE_KEY,
-        );
-        const executeNewPool = await drawerAccount.execute([
-          {
-            contractAddress: this.chainDocument.currentFuelContract,
-            entrypoint: 'manuallyCreatePool',
-            calldata: [],
-          },
-        ]);
-        await provider.waitForTransaction(executeNewPool.transaction_hash);
-        this.logger.debug(
-          `New Pool Created with tx: ${executeNewPool.transaction_hash}`,
-        );
-
-        await delay(1);
-        await this.handlUpdatePool();
       }
-      this.isFinishedSetWinner = true;
-    } catch (error) {
-    } finally {
-      this.isFinishedSetWinner = true;
     }
+    this.isFinishedSetWinner = true;
   }
 }
