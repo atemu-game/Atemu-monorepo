@@ -111,4 +111,25 @@ export class UserService {
     }
     return userRPC;
   }
+
+  async deleteSpecificCustomRPC(address: string, rpc: string) {
+    const formatAddress = formattedContractAddress(address);
+    const userRPC = await this.userConfigModel.findOne({
+      address: formatAddress,
+    });
+    if (!userRPC) {
+      throw new BadRequestException('User not found');
+    }
+    if (!userRPC.rpcPublicStore.includes(rpc)) {
+      throw new BadRequestException('RPC Of User not found');
+    }
+    const userRPCDelete = await this.userConfigModel
+      .findOneAndUpdate(
+        { address: formatAddress },
+        { $pull: { rpcPublicStore: rpc } },
+        { new: true },
+      )
+      .exec();
+    return userRPCDelete;
+  }
 }

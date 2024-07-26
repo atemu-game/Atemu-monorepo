@@ -82,7 +82,7 @@ export class BliztService {
         address: formatAddress,
         balance: autoBlizt.balance,
       };
-      console.log('Current Stattus', autoBlizt);
+      // console.log('Current Stattus', autoBlizt);
       this.sendBliztStatus(client);
       this.sendBliztBalance(client);
     }
@@ -146,9 +146,9 @@ export class BliztService {
       client.status = 'started';
       this.sendBliztStatus(client);
       this.sendBliztBalance(client);
+
       while (client.status == 'started') {
         if (client.status !== 'started') break;
-
         const timestampSetup = (new Date().getTime() / 1e3).toFixed(0);
 
         const typedDataValidate = {
@@ -220,6 +220,7 @@ export class BliztService {
               proof: formatedSignature,
             }),
           });
+
         if (currentBalance < formatBalance(estimatedFeeMint, 18)) {
           client.status = 'balance_low';
           this.sendBliztStatus(client);
@@ -237,9 +238,11 @@ export class BliztService {
             proof: formatedSignature,
           }),
         });
+
         const txR = await provider.waitForTransaction(transaction_hash, {
           retryInterval: 1000,
         });
+        // console.log('Tx', txR);
         currentBalance = await this.walletService.getBalanceEth(
           accountUser,
           provider,
@@ -300,7 +303,7 @@ export class BliztService {
   async stopBlizt(socket: Socket) {
     const client = this.sockets.find((client) => client.socket === socket);
     if (!client) {
-      console.log('Client not exists');
+      console.log('Client not Exist');
     } else {
       client.status = 'stopped';
       this.sendBliztStatus(client);
