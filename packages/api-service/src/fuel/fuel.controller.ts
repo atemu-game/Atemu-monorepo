@@ -5,7 +5,7 @@ import {
   ApiOkResponse,
   getSchemaPath,
 } from '@nestjs/swagger';
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { FuelService } from './fuel.service';
 import { QueryWinningHistoryDto } from './dto/winningHistory.dto';
 import { BaseResult, BaseResultPagination } from '@app/shared/types';
