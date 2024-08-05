@@ -39,6 +39,7 @@ import {
   ClaimFuelRewardQueryDto,
   ClaimFuelRewardResult,
 } from './dto/claimReward.dto';
+import { Web3Service } from '@app/web3/web3.service';
 
 export type FuelGatewayType = {
   client: Socket;
@@ -70,6 +71,7 @@ export class FuelService {
     @InjectModel(CardCollections.name)
     private readonly cardCollectionModel: Model<CardCollectionDocument>,
     private userService: UserService,
+    private web3Service: Web3Service,
   ) {}
 
   logger = new Logger(FuelService.name);
@@ -89,8 +91,20 @@ export class FuelService {
   private sendCurrentTotalPoint(socket: FuelGatewayType, point: number) {
     socket.client.emit(FuelEvents.TOTAL_POINT, point);
   }
-  private async sendWinner(socket: FuelGatewayType, winner: WinnerParam) {
+  private sendWinner(socket: FuelGatewayType, winner: WinnerParam) {
     socket.client.emit(FuelEvents.WINNER, winner);
+  }
+
+  private sendCreateNewPoolTxHash(socket: FuelGatewayType, txHash: string) {
+    socket.client.emit(FuelEvents.CREATE_POOL_TX_HASH, txHash);
+  }
+
+  private async sendAllCreatePoolTxHash(txHash: string) {
+    await Promise.all(
+      this.sockets.map(async (sk) => {
+        this.sendCreateNewPoolTxHash(sk, txHash);
+      }),
+    );
   }
 
   private async sendAllTotalOnlineClient() {
@@ -396,49 +410,49 @@ export class FuelService {
 
   @Cron(CronExpression.EVERY_5_SECONDS)
   async handleSetWinner() {
-    if (!this.isFinishedSetWinner) {
+    if (!this.isFinishedSetWinner || !this.chainDocument) {
       return;
     }
     this.isFinishedSetWinner = false;
-    const now = Date.now();
+    const now = await this.web3Service.getBlockTime(this.chainDocument.rpc);
 
     if (
       !this.currentPool ||
       (this.currentPool && now >= this.currentPool.endAt)
     ) {
-      this.logger.log(this.currentPool);
-      if (this.currentJoinedPool.length >= 3) {
-        const winner = this.setWinner();
-
-        const cardCollection = await this.cardCollectionModel.findOne();
-        const winnerParam: WinnerParam = {
-          winner,
-          cardId: '1',
-          cardContract: cardCollection.cardContract,
-          cardCollection,
-          amountOfCards: 1,
-        };
-
-        await this.fuelPoolModel.findOneAndUpdate(
-          {
-            address: this.chainDocument.currentFuelContract,
-            id: this.currentPool.id,
-          },
-          {
-            $set: winnerParam,
-          },
-          {
-            new: true,
-          },
-        );
-
-        await this.sendAllWinner(winnerParam);
-      }
-
       // TODO start new pool
       let isCreateFinished = false;
       while (!isCreateFinished) {
         try {
+          if (this.currentJoinedPool.length >= 3 && !this.currentPool.winner) {
+            const winner = this.setWinner();
+
+            const cardCollection = await this.cardCollectionModel.findOne();
+            const winnerParam: WinnerParam = {
+              winner,
+              cardId: '1',
+              cardContract: cardCollection.cardContract,
+              cardCollection,
+              amountOfCards: 1,
+            };
+
+            await this.fuelPoolModel.findOneAndUpdate(
+              {
+                address: this.chainDocument.currentFuelContract,
+                id: this.currentPool.id,
+              },
+              {
+                $set: winnerParam,
+              },
+              {
+                new: true,
+              },
+            );
+
+            await this.sendAllWinner(winnerParam);
+            this.currentPool.winner = winner;
+            console.log(winner);
+          }
           const provider = new RpcProvider({ nodeUrl: this.chainDocument.rpc });
           const drawerAccount = new Account(
             provider,
@@ -457,7 +471,8 @@ export class FuelService {
             `New Pool Created with tx: ${executeNewPool.transaction_hash}`,
           );
 
-          await delay(5);
+          await this.sendAllCreatePoolTxHash(executeNewPool.transaction_hash);
+          await delay(3);
           await this.handlUpdatePool();
           isCreateFinished = true;
         } catch (error) {

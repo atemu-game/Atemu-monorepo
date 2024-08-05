@@ -20,6 +20,7 @@ import {
 import { PassportModule } from '@nestjs/passport';
 import { FuelController } from './fuel.controller';
 import { UserService } from '../user/user.service';
+import { Web3Service } from '@app/web3/web3.service';
 
 @Module({
   imports: [
@@ -34,7 +35,7 @@ import { UserService } from '../user/user.service';
       { name: UserConfig.name, schema: UserConfigSchema },
     ]),
   ],
-  providers: [FuelGateway, FuelService, UserService],
+  providers: [FuelGateway, FuelService, UserService, Web3Service],
   controllers: [FuelController],
 })
 export class FuelModule {}
