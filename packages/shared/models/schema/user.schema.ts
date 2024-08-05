@@ -57,3 +57,4 @@ export class Users extends BaseSchema {
 }
 
 export const UserSchema = SchemaFactory.createForClass(Users);
+UserSchema.index({ address: 1 }, { unique: true });
