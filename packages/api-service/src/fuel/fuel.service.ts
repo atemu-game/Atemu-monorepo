@@ -13,7 +13,6 @@ import {
   JoinFuelPool,
   JoinFuelPoolDocument,
   UserDocument,
-  Users,
 } from '@app/shared/models';
 import { Model } from 'mongoose';
 import {

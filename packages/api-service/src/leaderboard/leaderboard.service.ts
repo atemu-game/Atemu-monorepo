@@ -22,23 +22,26 @@ export class LeaderboardService {
       result.data = new PaginationDto([], count, query.page, query.size);
       return result;
     }
-    const items = await this.userPointModel.find(
-      filter,
-      {
-        address: 1,
-        points: 1,
-        updatedAt: 1,
-        avatar: 1,
-        isVerified: 1,
-        username: 1,
-        createdAt: 1,
-      },
-      {
-        sort: { points: -1, createdAt: 1 },
-        skip: query.skipIndex,
-        limit: query.size,
-      },
-    );
+    const items = await this.userPointModel
+      .find(
+        filter,
+        {
+          address: 1,
+          points: 1,
+          updatedAt: 1,
+          avatar: 1,
+          isVerified: 1,
+          username: 1,
+          createdAt: 1,
+          mappingAddress: 1,
+        },
+        {
+          sort: { points: -1, createdAt: 1 },
+          skip: query.skipIndex,
+          limit: query.size,
+        },
+      )
+      .populate('mappingAddress', 'username address');
 
     result.data = new PaginationDto(items, count, query.page, query.size);
     return result;

@@ -33,7 +33,6 @@ export class BliztGateway
   handleConnection(client: Socket) {
     const [, token] = client.handshake.headers.authorization.split(' ');
     const userAddress = this.jwtService.decode(token);
-
     console.log(`Client connected: ${client.id} - ${userAddress.sub}`);
     this.bliztService.handleReconnectBlizt(client, userAddress.sub);
     this.clients.add(client);
@@ -47,7 +46,7 @@ export class BliztGateway
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   startMint(client: Socket, payload: any) {
     const userAddress = (client.handshake as any).user.sub;
-    console.log(`Start Mint from client ${userAddress} :RPC ${payload.rpc}`);
+    console.log(`Start Mint from client ${userAddress} | RPC: ${payload.rpc}`);
     this.bliztService.startBlizt(client, userAddress, payload.rpc);
   }
   @SubscribeMessage('stopMint')

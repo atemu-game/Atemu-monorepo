@@ -53,9 +53,21 @@ export class UsersController {
   }
 
   @JWT()
-  @Delete('/setting/customRPC')
+  @Delete('/setting/customRPC/all')
   async deleteCustomRpc(@User() user: iInfoToken) {
     const data = await this.userService.deleteCustomRPC(user.sub);
+    return new BaseResult(data);
+  }
+
+  @JWT()
+  @Delete('/setting/customRPC/specific')
+  async deleteSpecificCustomRpc(
+    @Body() body: UpdateRpcDTO,
+    @User() user: iInfoToken,
+  ) {
+    console.log('Data', body);
+    const rpc = body.rpc;
+    const data = await this.userService.deleteSpecificCustomRPC(user.sub, rpc);
     return new BaseResult(data);
   }
 }
