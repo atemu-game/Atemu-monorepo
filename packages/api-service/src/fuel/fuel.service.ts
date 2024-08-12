@@ -121,7 +121,11 @@ export class FuelService {
       { sort: { id: -1 } },
     );
 
-    if (currentPool && this.currentPool.id !== currentPool.id) {
+    if (
+      currentPool &&
+      (this.currentPool.id !== currentPool.id ||
+        this.currentPool.endAt !== currentPool.endAt)
+    ) {
       await this.handlUpdatePool(currentPool);
       await Promise.all(
         this.sockets.map(async (sk) => {
