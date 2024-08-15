@@ -413,16 +413,13 @@ export class FuelService {
 
   @Cron(CronExpression.EVERY_5_SECONDS)
   async handleSetWinner() {
-    if (!this.isFinishedSetWinner || !this.chainDocument) {
+    if (!this.isFinishedSetWinner || !this.chainDocument || !this.currentPool) {
       return;
     }
     this.isFinishedSetWinner = false;
     const now = await this.web3Service.getBlockTime(this.chainDocument.rpc);
 
-    if (
-      !this.currentPool ||
-      (this.currentPool && now >= this.currentPool.endAt)
-    ) {
+    if (this.currentPool && now >= this.currentPool.endAt) {
       // TODO start new pool
       let isCreateFinished = false;
       while (!isCreateFinished) {
