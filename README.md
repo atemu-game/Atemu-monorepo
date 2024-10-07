@@ -16,4 +16,8 @@ yarn workspace api-service start:dev
 
 ## Test
 
-
+### Run Project Docker
+    
+    ```bash
+    docker-compose up --build
+    ```
