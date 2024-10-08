@@ -6,3 +6,8 @@ export enum FuelEvents {
   CREATE_POOL_TX_HASH = 'CREATE_POOL_TX_HASH',
   WINNER = 'WINNER',
 }
+export enum FuelWheelStatus {
+  'CREATED' = 'CREATED', // Created wheel when the pool is created
+  'RUNNING' = 'RUNNING', // Rotating wheel
+  'WAITING' = 'WAITING', // Waiting for the next round to start new pool
+}
