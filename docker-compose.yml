@@ -47,7 +47,7 @@ services:
       - "8090:8090"        # ONCHAIN_WORKER_PORT
       - "8091:8091"        # OFFCHAIN_WORKER_PORT
     depends_on:
-      - redis
+      - redis-atemu
     env_file:
       - .env # Load environment variables from .env file
     volumes:
