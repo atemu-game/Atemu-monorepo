@@ -26,7 +26,7 @@ import {
 import configuration from '@app/shared/configuration';
 import { delay } from '@app/shared/utils/promise';
 import { QueryWinningHistoryDto } from './dto/winningHistory.dto';
-import { BaseResult, BaseResultPagination } from '@app/shared/types';
+import { BaseResultPagination } from '@app/shared/types';
 import {
   formattedContractAddress,
   isValidAddress,
@@ -273,11 +273,15 @@ export class FuelService {
       return result;
     }
 
-    const items = await this.fuelPoolModel.find(
-      filter,
-      {},
-      { sort: { endAt: -1 }, skip: skipIndex, limit: size },
-    );
+    const items = await this.fuelPoolModel
+      .find(filter, {}, { sort: { endAt: -1 }, skip: skipIndex, limit: size })
+      .populate([
+        'cardCollection',
+        {
+          path: 'winner',
+          select: 'address username ',
+        },
+      ]);
     result.data = new PaginationDto(items, total, page, size);
 
     return result;
@@ -286,7 +290,7 @@ export class FuelService {
   async getClaimReward(
     user: string,
     query: ClaimFuelRewardQueryDto,
-  ): Promise<BaseResult<ClaimFuelRewardResult>> {
+  ): Promise<ClaimFuelRewardResult> {
     const { poolContract, poolId } = query;
     const formattedAddress = formattedContractAddress(poolContract);
     const userDocument = await this.userService.getOrCreateUser(user);
@@ -371,7 +375,7 @@ export class FuelService {
       amountOfCards: poolDetail.amountOfCards,
       proof,
     };
-    return new BaseResult(result);
+    return result;
   }
 
   @Cron(CronExpression.EVERY_5_SECONDS)

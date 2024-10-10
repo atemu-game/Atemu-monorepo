@@ -1,80 +1,57 @@
+version: '3.8'
+
+volumes:
+  redis-data:
+  node_modules: {}
+  mongo_data: {}
+  mongo_log: {}
+
+     
+networks:
+  app-network:
+    driver: bridge
 
 services:
   redis:
-    image: "redis:latest"
-    container_name: "redis_container"
+    image: redis:alpine
     ports:
       - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+
+  mongo:
+    image: mongo:7.0.14
+    restart: always
     environment:
-      - REDIS_HOST=localhost
-      - REDIS_PORT=6379
+      - HOST=mongo
+    volumes:
+      - mongo_data:/data/db
+      - mongo_log:/data/log
+    networks:
+      - app-network
+    ports:
+      - 27017:27017
+    
+    
+  nestjs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"         # API_PORT
+      - "5050:5050"        # BLIZT_GATEWAY_PORT
+      - "5051:5051"        # FUEL_GATEWAY_PORT
+      - "8089:8089"        # ONCHAIN_QUEUE_PORT
+      - "8090:8090"        # ONCHAIN_WORKER_PORT
+      - "8091:8091"        # OFFCHAIN_WORKER_PORT
+    depends_on:
+      - redis
+    env_file:
+      - .env # Load environment variables from .env file
+    volumes:
+      - .:/app
+    networks:
+      - app-network
 
-  # atemu_api-dev:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile # Specify your Dockerfile if needed
-  #   container_name: atemu_api-dev
-  #   ports:
-  #     - "8000:8000"
-  #   volumes:
-  #     - .:/app # Mount current directory to /app in container
-  #   env_file:
-  #     - .env
-  #   working_dir: /app
-  #   command: yarn workspace api-service start:dev
-
-  # atemu_onchain-queue-dev:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile # Specify your Dockerfile if needed
-  #   container_name: atemu_onchain-queue-dev
-  #   ports:
-  #     - "8080:8080"
-  #   volumes:
-  #     - .:/app # Mount current directory to /app in container
-  #   env_file:
-  #     - .env
-  #   working_dir: /app
-  #   command: yarn workspace onchain-queue start:dev
-
-  # onchain_worker_dev:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile # Specify your Dockerfile if needed
-  #   container_name: onchain_worker_dev
-  #   ports:
-  #     - "8090:8090"
-  #   volumes:
-  #     - .:/app # Mount current directory to /app in container
-  #   env_file:
-  #     - .env
-  #   working_dir: /app
-  #   command: yarn workspace onchain-worker start:dev
-
-#   mongo:
-#     image: mongo:7.0.14
-#     networks:
-#       - app-network
-#     restart: always
-#     environment:
-#       - HOST=mongo
-#     volumes:
-#       - mongo_data:/data/db
-#       - mongo_log:/data/log
-#     ports:
-#       - 127.0.0.1:27018:27017
-#     user: '1000:1000'
-
-
-# secrets:
-#   db_path:
-#     file: ./secrets/DB_PATH.txt
-
-# volumes:
-#   node_modules: {}
-#   mongo_data: {}
-#   mongo_log: {}
-
-# networks:
-#   app-network:
-#     driver: bridge
