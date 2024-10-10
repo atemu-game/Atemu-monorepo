@@ -61,7 +61,7 @@ export class FuelController {
   async claimReward(
     @Body() query: ClaimFuelRewardQueryDto,
     @User() user: iInfoToken,
-  ): Promise<BaseResult<ClaimFuelRewardResult>> {
+  ): Promise<ClaimFuelRewardResult> {
     return await this.fuelService.getClaimReward(user.sub, query);
   }
 }

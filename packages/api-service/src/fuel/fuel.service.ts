@@ -26,7 +26,7 @@ import {
 import configuration from '@app/shared/configuration';
 import { delay } from '@app/shared/utils/promise';
 import { QueryWinningHistoryDto } from './dto/winningHistory.dto';
-import { BaseResult, BaseResultPagination } from '@app/shared/types';
+import { BaseResultPagination } from '@app/shared/types';
 import {
   formattedContractAddress,
   isValidAddress,
@@ -273,11 +273,15 @@ export class FuelService {
       return result;
     }
 
-    const items = await this.fuelPoolModel.find(
-      filter,
-      {},
-      { sort: { endAt: -1 }, skip: skipIndex, limit: size },
-    );
+    const items = await this.fuelPoolModel
+      .find(filter, {}, { sort: { endAt: -1 }, skip: skipIndex, limit: size })
+      .populate([
+        'cardCollection',
+        {
+          path: 'winner',
+          select: 'address username ',
+        },
+      ]);
     result.data = new PaginationDto(items, total, page, size);
 
     return result;
@@ -286,7 +290,7 @@ export class FuelService {
   async getClaimReward(
     user: string,
     query: ClaimFuelRewardQueryDto,
-  ): Promise<BaseResult<ClaimFuelRewardResult>> {
+  ): Promise<ClaimFuelRewardResult> {
     const { poolContract, poolId } = query;
     const formattedAddress = formattedContractAddress(poolContract);
     const userDocument = await this.userService.getOrCreateUser(user);
@@ -371,7 +375,7 @@ export class FuelService {
       amountOfCards: poolDetail.amountOfCards,
       proof,
     };
-    return new BaseResult(result);
+    return result;
   }
 
   @Cron(CronExpression.EVERY_5_SECONDS)
@@ -413,82 +417,86 @@ export class FuelService {
 
   @Cron(CronExpression.EVERY_5_SECONDS)
   async handleSetWinner() {
-    if (!this.isFinishedSetWinner || !this.chainDocument) {
+    if (!this.isFinishedSetWinner || !this.chainDocument || !this.currentPool) {
       return;
     }
     this.isFinishedSetWinner = false;
-    const now = await this.web3Service.getBlockTime(this.chainDocument.rpc);
+    try {
+      const now = await this.web3Service.getBlockTime(this.chainDocument.rpc);
 
-    if (
-      !this.currentPool ||
-      (this.currentPool && now >= this.currentPool.endAt)
-    ) {
-      // TODO start new pool
-      let isCreateFinished = false;
-      while (!isCreateFinished) {
-        try {
-          if (this.currentJoinedPool.length >= 3 && !this.currentPool.winner) {
-            const winner = this.setWinner();
+      if (this.currentPool && now >= this.currentPool.endAt) {
+        // TODO start new pool
+        let isCreateFinished = false;
+        while (!isCreateFinished) {
+          try {
+            if (
+              this.currentJoinedPool.length >= 3 &&
+              !this.currentPool.winner
+            ) {
+              const winner = this.setWinner();
 
-            const cardCollection = await this.cardCollectionModel.findOne();
-            const winnerParam: WinnerParam = {
-              winner,
-              cardId: '1',
-              cardContract: cardCollection.cardContract,
-              cardCollection,
-              amountOfCards: 1,
-            };
+              const cardCollection = await this.cardCollectionModel.findOne();
+              const winnerParam: WinnerParam = {
+                winner,
+                cardId: '1',
+                cardContract: cardCollection.cardContract,
+                cardCollection,
+                amountOfCards: 1,
+              };
 
-            await this.fuelPoolModel.findOneAndUpdate(
+              await this.fuelPoolModel.findOneAndUpdate(
+                {
+                  address: this.chainDocument.currentFuelContract,
+                  id: this.currentPool.id,
+                },
+                {
+                  $set: winnerParam,
+                },
+                {
+                  new: true,
+                },
+              );
+
+              await this.sendAllWinner(winnerParam);
+              this.currentPool.winner = winner;
+              console.log(winner);
+            }
+            const provider = new RpcProvider({
+              nodeUrl: this.chainDocument.rpc,
+            });
+            const drawerAccount = new Account(
+              provider,
+              configuration().ACCOUNT_ADDRESS,
+              configuration().PRIVATE_KEY,
+            );
+            const executeNewPool = await drawerAccount.execute([
               {
-                address: this.chainDocument.currentFuelContract,
-                id: this.currentPool.id,
+                contractAddress: this.chainDocument.currentFuelContract,
+                entrypoint: 'manuallyCreatePool',
+                calldata: [],
               },
-              {
-                $set: winnerParam,
-              },
-              {
-                new: true,
-              },
+            ]);
+            await provider.waitForTransaction(executeNewPool.transaction_hash);
+            this.logger.debug(
+              `New Pool Created with tx: ${executeNewPool.transaction_hash}`,
             );
 
-            await this.sendAllWinner(winnerParam);
-            this.currentPool.winner = winner;
-            console.log(winner);
-          }
-          const provider = new RpcProvider({ nodeUrl: this.chainDocument.rpc });
-          const drawerAccount = new Account(
-            provider,
-            configuration().ACCOUNT_ADDRESS,
-            configuration().PRIVATE_KEY,
-          );
-          const executeNewPool = await drawerAccount.execute([
-            {
-              contractAddress: this.chainDocument.currentFuelContract,
-              entrypoint: 'manuallyCreatePool',
-              calldata: [],
-            },
-          ]);
-          await provider.waitForTransaction(executeNewPool.transaction_hash);
-          this.logger.debug(
-            `New Pool Created with tx: ${executeNewPool.transaction_hash}`,
-          );
+            await this.sendAllCreatePoolTxHash(executeNewPool.transaction_hash);
+            await delay(3);
+            await this.handlUpdatePool();
+            isCreateFinished = true;
+          } catch (error) {
+            if (
+              !(error.message as string).includes('Previous Pool Not End Yet')
+            ) {
+              this.logger.error(error.message);
+            }
 
-          await this.sendAllCreatePoolTxHash(executeNewPool.transaction_hash);
-          await delay(3);
-          await this.handlUpdatePool();
-          isCreateFinished = true;
-        } catch (error) {
-          if (
-            !(error.message as string).includes('Previous Pool Not End Yet')
-          ) {
-            this.logger.error(error.message);
+            await delay(1);
           }
-
-          await delay(1);
         }
       }
-    }
+    } catch (err) {}
     this.isFinishedSetWinner = true;
   }
 }

@@ -23,7 +23,7 @@ export class FuelGateway
   }
 
   handleConnection(client: Socket) {
-    console.log(`Client connected: ${client.id}`);
+    console.log(`Fuel- Client connected: ${client.id}`);
     this.fuelService.handleConenction(client);
   }
   handleDisconnect(client: any) {

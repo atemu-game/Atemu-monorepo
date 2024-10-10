@@ -118,7 +118,7 @@ export class CardService implements OnchainQueueService {
       cardContract: cardAddress,
     });
 
-    let existingFromCard = await this.cardModel.findOne({
+    const existingFromCard = await this.cardModel.findOne({
       cardContract: cardAddress,
       cardId: tokenId,
       owner: fromUser,
