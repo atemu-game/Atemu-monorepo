@@ -12,7 +12,7 @@ networks:
     driver: bridge
 
 services:
-  redis:
+  redis-atemu:
     image: redis:alpine
     ports:
       - "6379:6379"
@@ -21,7 +21,7 @@ services:
     networks:
       - app-network
 
-  mongo:
+  mongo-atemu:
     image: mongo:7.0.14
     restart: always
     environment:
@@ -35,7 +35,7 @@ services:
       - 27017:27017
     
     
-  nestjs:
+  atemu-service:
     build:
       context: .
       dockerfile: Dockerfile
