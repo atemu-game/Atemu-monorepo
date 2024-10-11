@@ -25,9 +25,11 @@ import {
   Contract,
   cairo,
   uint256,
+  GetTransactionReceiptResponse,
 } from 'starknet';
 import { BliztEvent, BliztSatus } from './type';
 import configuration from '@app/shared/configuration';
+import { retryUntil } from '@app/shared/utils/promise';
 
 export type BliztParam = {
   socket: Socket;
@@ -150,7 +152,6 @@ export class BliztService {
       while (client.status == 'started') {
         if (client.status !== 'started') break;
         const timestampSetup = (new Date().getTime() / 1e3).toFixed(0);
-
         const typedDataValidate = {
           types: {
             StarkNetDomain: [
@@ -239,10 +240,27 @@ export class BliztService {
           }),
         });
 
-        const txR = await provider.waitForTransaction(transaction_hash, {
-          retryInterval: 1000,
-        });
-        // console.log('Tx', txR);
+        let isFinished = null;
+        while (!isFinished == null) {
+          const tx: GetTransactionReceiptResponse = await retryUntil(
+            async () => {
+              const tx = await provider.getTransactionReceipt(transaction_hash);
+              return tx;
+            },
+            (tx) => tx != null,
+            10,
+            3000,
+          );
+
+          if (!tx) {
+            return false;
+          }
+          if (tx.isSuccess()) {
+            isFinished = true;
+          }
+        }
+        const txR = await provider.waitForTransaction(transaction_hash);
+
         currentBalance = await this.walletService.getBalanceEth(
           accountUser,
           provider,
@@ -294,6 +312,7 @@ export class BliztService {
         this.sendBliztBalance(client);
       }
     } catch (error: any) {
+      console.log('Error', error);
       if (error.message === 'fetch failed') {
         socket.emit('error', 'RPC InvalidLink URL - Fetch Failed');
       }

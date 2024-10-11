@@ -24,6 +24,7 @@ export class CreateFuelPoolProcessor {
   async detectEv(job: Job<LogsReturnValues>) {
     const event = job.data;
     const maxRetry = 10;
+
     const chain = await this.chainModel.findOne();
     try {
       await retryUntil(
@@ -32,7 +33,9 @@ export class CreateFuelPoolProcessor {
         maxRetry,
       );
     } catch (error) {
-      this.logger.error(`Failed to detect tx hash ${event.transaction_hash}`);
+      this.logger.error(
+        `Failed to detect tx hash create fuel pool ${event.transaction_hash}`,
+      );
       this.queue.add(ONCHAIN_JOB.JOB_CREATE_POOL, event);
     }
   }
