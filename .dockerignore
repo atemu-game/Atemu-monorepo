@@ -1,3 +1,19 @@
 node_modules
 dist
 .venv
+
+!packages/admin
+
+# Common Keep
+!*.json
+!yarn.lock
+!.yarnrc
+!packages/common
+
+**/.circleci
+**/.editorconfig
+**/.dockerignore
+**/.git
+**/.DS_Store
+**/.vscode
+**/node_modules

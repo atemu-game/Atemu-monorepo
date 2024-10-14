@@ -2,17 +2,17 @@ version: '3.8'
 
 volumes:
   redis-data:
-  node_modules: {}
-  mongo_data: {}
-  mongo_log: {}
+  node_modules:
+  mongo_data:
+  mongo_log:
 
-     
 networks:
   app-network:
     driver: bridge
 
 services:
   redis-atemu:
+    container_name: redis-atemu
     image: redis:alpine
     ports:
       - "6379:6379"
@@ -20,38 +20,37 @@ services:
       - redis-data:/data
     networks:
       - app-network
+    restart: on-failure
 
-  mongo-atemu:
+  mongo:
     image: mongo:7.0.14
-    restart: always
+    container_name: mongo_atemu
+    networks:
+      - app-network
     environment:
       - HOST=mongo
     volumes:
       - mongo_data:/data/db
       - mongo_log:/data/log
-    networks:
-      - app-network
     ports:
-      - 27017:27017
-    
-    
+      - 127.0.0.1:27019:27017
+
   atemu-service:
+    container_name: atemu-service
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"         # API_PORT
-      - "5050:5050"        # BLIZT_GATEWAY_PORT
-      - "5051:5051"        # FUEL_GATEWAY_PORT
-      - "8089:8089"        # ONCHAIN_QUEUE_PORT
-      - "8090:8090"        # ONCHAIN_WORKER_PORT
-      - "8091:8091"        # OFFCHAIN_WORKER_PORT
-    depends_on:
-      - redis-atemu
+      - "8000:8000"
+      - "5050:5050"
+      - "5051:5051"
+      - "8089:8089"
+      - "8090:8090"
+      - "8091:8091"
     env_file:
-      - .env # Load environment variables from .env file
+      - .env
     volumes:
       - .:/app
     networks:
       - app-network
-
+    restart: on-failure

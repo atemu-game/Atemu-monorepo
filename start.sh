@@ -1,8 +1,4 @@
 
-
-redis-server &
-
-
 sleep 5
 
 
