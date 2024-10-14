@@ -346,12 +346,12 @@ export class FuelService {
       },
       primaryType: 'WinnerStruct',
       domain: {
-        name: 'atemu',
+        name: 'Fuel',
         version: '1',
         chainId: shortString.encodeShortString(configuration().CHAIN_ID),
       },
       message: {
-        poolId: uint256.bnToUint256(1),
+        poolId: uint256.bnToUint256(poolId),
         winner: user,
         cardId: uint256.bnToUint256(1),
         amountCards: uint256.bnToUint256(1),

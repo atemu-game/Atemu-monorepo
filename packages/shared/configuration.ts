@@ -26,14 +26,14 @@ export default () => ({
 
   // RPC - Enviroment
   RPC_URL: String(process.env.RPC_URL) || RpcProviderSetting.TESTNET,
-  CHAIN_ID: String(process.env.CHAIN_ID) || ChainName.SN_SEPOLIA,
+  CHAIN_ID: ChainName.SN_SEPOLIA,
   // RPC - Provider
   PRIVATE_KEY: String(process.env.PRIVATE_KEY),
   ACCOUNT_ADDRESS: String(process.env.ACCOUNT_ADDRESS),
 
   IPFS_GATEWAY: String(process.env.IPFS_GATEWAY),
 
-  BEGIN_BLOCK: Number(process.env.BEGIN_BLOCK) || 70000,
+  BEGIN_BLOCK: Number(process.env.BEGIN_BLOCK),
 
   QUEUE_HOST: String(process.env.QUEUE_HOST),
   QUEUE_PORT: Number(process.env.QUEUE_PORT),

@@ -29,6 +29,7 @@ export class PointService implements OnchainQueueService {
   async proccessAddPointEvent(log: LogsReturnValues) {
     const { reciver, point } = log.returnValues;
 
+    console.log('Current User Point', point);
     // const userPoint = await this.userPointService.getUserPoint(reciver);
     await this.userPointService.updateUserPoint(reciver, point);
   }

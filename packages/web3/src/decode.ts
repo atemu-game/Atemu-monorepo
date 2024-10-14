@@ -19,6 +19,7 @@ export const decodeAddPoints = (
   const parsedEvent =
     contract.parseEvents(txReceipt)[0]['atemu::point::point::Point::AddPoint'];
 
+  console.log('Parsed Event: ', parsedEvent.point.toString());
   const returnValues: CreatePointReturnValues = {
     reciver: formattedContractAddress(
       num.toHex(parsedEvent.user as BigNumberish),
