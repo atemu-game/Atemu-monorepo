@@ -423,7 +423,7 @@ export class FuelService {
     this.isFinishedSetWinner = false;
     try {
       const now = await this.web3Service.getBlockTime(this.chainDocument.rpc);
-      if (!now) return;
+
       if (this.currentPool && now >= this.currentPool.endAt) {
         // TODO start new pool
         let isCreateFinished = false;
@@ -432,6 +432,43 @@ export class FuelService {
             const provider = new RpcProvider({
               nodeUrl: this.chainDocument.rpc,
             });
+            const now = await this.web3Service.getBlockTime(
+              this.chainDocument.rpc,
+            );
+            if (
+              this.currentJoinedPool.length >= 3 &&
+              !this.currentPool.winner &&
+              now >= this.currentPool.endAt
+            ) {
+              const winner = this.setWinner();
+
+              const cardCollection = await this.cardCollectionModel.findOne();
+              const winnerParam: WinnerParam = {
+                winner,
+                cardId: '1',
+                cardContract: cardCollection.cardContract,
+                cardCollection,
+                amountOfCards: 1,
+              };
+
+              await this.fuelPoolModel.findOneAndUpdate(
+                {
+                  address: this.chainDocument.currentFuelContract,
+                  id: this.currentPool.id,
+                },
+                {
+                  $set: winnerParam,
+                },
+                {
+                  new: true,
+                },
+              );
+
+              await this.sendAllWinner(winnerParam);
+              this.currentPool.winner = winner;
+              console.log(winner);
+            }
+
             const drawerAccount = new Account(
               provider,
               configuration().ACCOUNT_ADDRESS,
@@ -462,35 +499,6 @@ export class FuelService {
 
             await delay(1);
           }
-        }
-        if (this.currentJoinedPool.length >= 3 && !this.currentPool.winner) {
-          const winner = this.setWinner();
-
-          const cardCollection = await this.cardCollectionModel.findOne();
-          const winnerParam: WinnerParam = {
-            winner,
-            cardId: '1',
-            cardContract: cardCollection.cardContract,
-            cardCollection,
-            amountOfCards: 1,
-          };
-
-          await this.fuelPoolModel.findOneAndUpdate(
-            {
-              address: this.chainDocument.currentFuelContract,
-              id: this.currentPool.id,
-            },
-            {
-              $set: winnerParam,
-            },
-            {
-              new: true,
-            },
-          );
-
-          await this.sendAllWinner(winnerParam);
-          this.currentPool.winner = winner;
-          console.log(winner);
         }
       }
     } catch (err) {}

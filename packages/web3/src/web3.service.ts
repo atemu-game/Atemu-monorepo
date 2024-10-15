@@ -29,7 +29,7 @@ export class Web3Service {
   async getBlockTime(rpc: string) {
     try {
       const provider = this.getProvider(rpc);
-      const block = await provider.getBlock('latest');
+      const block = await provider.getBlock('pending');
       return block.timestamp * 1e3;
     } catch (error) {
       return null;
