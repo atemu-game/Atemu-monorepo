@@ -435,6 +435,7 @@ export class FuelService {
             const now = await this.web3Service.getBlockTime(
               this.chainDocument.rpc,
             );
+
             if (
               this.currentJoinedPool.length >= 3 &&
               !this.currentPool.winner &&

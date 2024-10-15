@@ -27,13 +27,9 @@ export class Web3Service {
     return provider;
   }
   async getBlockTime(rpc: string) {
-    try {
-      const provider = this.getProvider(rpc);
-      const block = await provider.getBlock('pending');
-      return block.timestamp * 1e3;
-    } catch (error) {
-      return null;
-    }
+    const provider = this.getProvider(rpc);
+    const block = await provider.getBlock('pending');
+    return block.timestamp * 1e3;
   }
   async getContractInstance(
     abi: any,
