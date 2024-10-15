@@ -27,9 +27,13 @@ export class Web3Service {
     return provider;
   }
   async getBlockTime(rpc: string) {
-    const provider = this.getProvider(rpc);
-    const block = await provider.getBlock('pending');
-    return block.timestamp * 1e3;
+    try {
+      const provider = this.getProvider(rpc);
+      const block = await provider.getBlock('latest');
+      return block.timestamp * 1e3;
+    } catch (error) {
+      return null;
+    }
   }
   async getContractInstance(
     abi: any,
@@ -242,7 +246,7 @@ export class Web3Service {
   ): Promise<string> {
     const provider = this.getProvider(rpc);
 
-    let abi = ABIS.CardsABI;
+    const abi = ABIS.CardsABI;
 
     const contractInstance = new Contract(abi, address, provider);
 

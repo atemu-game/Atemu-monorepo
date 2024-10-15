@@ -20,7 +20,7 @@ services:
       - redis-data:/data
     networks:
       - app-network
-    restart: on-failure
+    restart: always
 
   mongo:
     image: mongo:7.0.14
@@ -33,7 +33,7 @@ services:
       - mongo_data:/data/db
       - mongo_log:/data/log
     ports:
-      - 127.0.0.1:27019:27017
+      - 27019:27017
 
   atemu-service:
     container_name: atemu-service
@@ -53,4 +53,4 @@ services:
       - .:/app
     networks:
       - app-network
-    restart: on-failure
+    restart: always
