@@ -89,6 +89,7 @@ export class Web3Service {
           ...txReceipt,
           events: txReceipt.events.filter((ev) => ev == event),
         };
+
         if (
           event.keys.includes(EventTopic.ADD_POINT) &&
           chain.bliztContractAdress ==
@@ -158,7 +159,7 @@ export class Web3Service {
         ) {
           eventWithTypes.push({
             ...txReceiptFilter,
-            eventType: EventType.ClaimRewards,
+            eventType: EventType.ClaimReward,
             returnValues: decodeClaimRewards(
               txReceiptFilter,
               provider,

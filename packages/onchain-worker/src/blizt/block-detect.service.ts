@@ -110,12 +110,13 @@ export class BlockDetectService extends OnchainWorker {
 
   process = async (block: GetBlockResponse): Promise<void> => {
     const beginTime = Date.now();
-    const blockNumber =
-      block.status == BlockStatus.ACCEPTED_ON_L2 ||
-      block.status == BlockStatus.ACCEPTED_ON_L1
-        ? block.block_number
-        : this.pendingBlock;
+    // const blockNumber =
+    //   block.status == BlockStatus.ACCEPTED_ON_L2 ||
+    //   block.status == BlockStatus.ACCEPTED_ON_L1
+    //     ? block.block_number
+    //     : this.pendingBlock;
 
+    const blockNumber = 241043;
     this.logger.debug(
       `begin process block ${Number(blockNumber)} ${
         block.transactions.length
@@ -219,7 +220,7 @@ export class BlockDetectService extends OnchainWorker {
       );
 
       const matchClaimRewardEv = eventWithType.filter(
-        (ev) => ev.eventType === EventType.ClaimRewards,
+        (ev) => ev.eventType === EventType.ClaimReward,
       );
 
       const matchJoinFuelPool = eventWithType.filter(
@@ -267,7 +268,7 @@ export class BlockDetectService extends OnchainWorker {
             queue = this.joinFuelPoolQueue;
             jobName = ONCHAIN_JOB.JOB_JOIN_POOL;
             break;
-          case EventType.ClaimRewards:
+          case EventType.ClaimReward:
             queue = this.claimFuelRewardQueue;
             jobName = ONCHAIN_JOB.JOB_CLAIM_FUEL_REWARD;
             break;

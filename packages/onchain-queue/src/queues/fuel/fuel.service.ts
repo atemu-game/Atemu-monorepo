@@ -56,7 +56,7 @@ export class FuelService implements OnchainQueueService {
 
     process[EventType.CreatePool] = this.processCreatePoolEv;
     process[EventType.JoiningPool] = this.processJoinPoolEv;
-    process[EventType.ClaimRewards] = this.processClaimRewardEv;
+    process[EventType.ClaimReward] = this.processClaimRewardEv;
 
     await process[log.eventType].call(this, log, chain);
   }
@@ -188,6 +188,7 @@ export class FuelService implements OnchainQueueService {
       timestamp,
     } = log.returnValues as ClaimRewardsReturnValue;
 
+    console.log('ClaimReward', log.returnValues);
     const poolDocument = await this.getOrCreatePool(
       poolId,
       poolContract,
