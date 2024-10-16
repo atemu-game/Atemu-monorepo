@@ -51,7 +51,8 @@ export class Web3Service {
       chain.rpc,
     );
     const point = await contractInstance.getUserPoint(userAddress);
-    return point;
+
+    return Number(point as bigint);
   }
 
   async getPoolDetail(
