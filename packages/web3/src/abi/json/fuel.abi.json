@@ -118,6 +118,10 @@
             "type": "core::integer::u256"
           },
           {
+            "name": "amountCards",
+            "type": "core::integer::u256"
+          },
+          {
             "name": "proof",
             "type": "core::array::Array::<core::felt252>"
           }
@@ -469,7 +473,17 @@
       },
       {
         "kind": "data",
+        "name": "cardAddress",
+        "type": "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        "kind": "data",
         "name": "cardId",
+        "type": "core::integer::u256"
+      },
+      {
+        "kind": "data",
+        "name": "amountCards",
         "type": "core::integer::u256"
       },
       {

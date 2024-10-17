@@ -146,7 +146,6 @@ export const decodeClaimRewards = (
 
   const parsedEvent =
     contract.parseEvents(txReceipt)[0]['atemu::fuel::fuel::Fuel::ClaimReward'];
-  console.log(parsedEvent);
 
   const returnValue: ClaimRewardsReturnValue = {
     poolId: Number((parsedEvent.poolId as bigint).toString()),

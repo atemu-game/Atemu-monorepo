@@ -116,8 +116,6 @@ export class BlockDetectService extends OnchainWorker {
         ? block.block_number
         : this.pendingBlock;
 
-    //!todo check
-    // const blockNumber = 241043;
     this.logger.debug(
       `begin process block ${Number(blockNumber)} ${
         block.transactions.length
