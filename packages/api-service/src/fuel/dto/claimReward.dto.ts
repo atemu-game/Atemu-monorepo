@@ -30,3 +30,17 @@ export class ClaimFuelRewardResult {
   @ApiProperty()
   proof: string[];
 }
+
+export class ConfrimClaimRewardQueryDto {
+  @ApiProperty()
+  @IsNumberString()
+  poolId: string;
+
+  @ApiProperty()
+  @IsHexadecimal()
+  poolContract: string;
+
+  @ApiProperty()
+  @IsHexadecimal()
+  transactionHash: string;
+}

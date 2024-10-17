@@ -1,28 +1,50 @@
 
-FROM node:20
-
+FROM node:20 as prod-lib
 WORKDIR /app
+COPY package.json package.json
+COPY yarn.lock yarn.lock
 
-# Install netcat-openbsd
-RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/lists/*
+COPY packages/api-service/package.json packages/api-service/package.json
+COPY packages/offchain-worker/package.json packages/offchain-worker/package.json
+COPY packages/onchain-worker/package.json packages/onchain-worker/package.json
+COPY packages/onchain-queue/package.json packages/onchain-queue/package.json
+COPY packages/shared/package.json packages/shared/package.json
+COPY packages/web3/package.json packages/web3/package.json
+
+RUN yarn install --production  --ignore-scripts --prefer-offline
 
 
-# Copy package.json and yarn.lock files
-COPY package.json yarn.lock ./
+FROM node:20 as dev-lib
+WORKDIR /app
+COPY package.json package.json
+COPY yarn.lock yarn.lock
 
-# Install dependencies
-RUN yarn install --frozen-lockfile
+COPY packages/api-service/package.json packages/api-service/package.json
+COPY packages/offchain-worker/package.json packages/offchain-worker/package.json
+COPY packages/onchain-worker/package.json packages/onchain-worker/package.json
+COPY packages/onchain-queue/package.json packages/onchain-queue/package.json
+COPY packages/shared/package.json packages/shared/package.json
+COPY packages/web3/package.json packages/web3/package.json
 
-RUN yarn build
+RUN yarn install
 
-# Copy the entire workspace
-COPY . .
+FROM dev-lib as builder
+ARG PKG
+COPY packages/shared packages/shared
+COPY packages/web3 packages/web3
+COPY packages/${PKG} packages/${PKG}
+COPY package.json package.json
+COPY yarn.lock yarn.lock
+COPY tsconfig.json tsconfig.json
+RUN yarn workspace ${PKG} build 
 
-# Set environment variables
-COPY .env ./
+FROM prod-lib as runner
+ARG PKG
+COPY --from=builder /app/packages/${PKG}/dist packages/${PKG}/dist
+RUN find packages/${PKG}/dist -name '*.map' -type f -delete
 
-EXPOSE 8000 5050 5051 8089 8090 8091
+RUN chown -R node:node /app
+USER node  
 
-RUN chmod +x start.sh
-
-CMD ["./start.sh"]
+ENV main=packages/${PKG}/dist/${PKG}/src/main.js
+CMD node $main

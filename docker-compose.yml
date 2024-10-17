@@ -22,6 +22,7 @@ services:
       - app-network
     restart: always
 
+
   mongo:
     image: mongo:7.0.14
     container_name: mongo_atemu
@@ -33,24 +34,54 @@ services:
       - mongo_data:/data/db
       - mongo_log:/data/log
     ports:
-      - 27019:27017
+      - "27019:27017"
+   
 
+  onchain-worker:
+    container_name: onchain-worker
+    build:
+      context: .
+      args:
+        PKG: 'onchain-worker'
+      dockerfile: Dockerfile
+    networks:
+      - app-network
+    env_file:
+      - .env
+    restart: always
+    depends_on:
+      - mongo
+      - redis-atemu
+   
+
+  onchain-queue:
+    container_name: onchain-queue
+    build:
+      context: .
+      args:
+        PKG: 'onchain-queue'
+      dockerfile: Dockerfile
+    networks:
+      - app-network
+    env_file:
+      - .env
+    restart: always
+    depends_on:
+      - mongo
+      - redis-atemu
+    
+   
   atemu-service:
     container_name: atemu-service
     build:
       context: .
+      args:
+        PKG: 'api-service'
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-      - "5050:5050"
-      - "5051:5051"
-      - "8089:8089"
-      - "8090:8090"
-      - "8091:8091"
     env_file:
       - .env
     volumes:
       - .:/app
     networks:
       - app-network
-    restart: always
+
