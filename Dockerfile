@@ -46,5 +46,7 @@ RUN find packages/${PKG}/dist -name '*.map' -type f -delete
 RUN chown -R node:node /app
 USER node  
 
+EXPOSE 8000 5050 5051 8089 8090 8091
+
 ENV main=packages/${PKG}/dist/${PKG}/src/main.js
 CMD node $main

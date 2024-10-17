@@ -82,6 +82,11 @@ services:
       - .env
     volumes:
       - .:/app
+    ports:
+      - "8000:8000"
+      - "5050:5050"
+      - "5051:5051"
+
     networks:
       - app-network
 

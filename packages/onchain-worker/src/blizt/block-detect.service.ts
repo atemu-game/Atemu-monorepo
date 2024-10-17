@@ -110,13 +110,14 @@ export class BlockDetectService extends OnchainWorker {
 
   process = async (block: GetBlockResponse): Promise<void> => {
     const beginTime = Date.now();
-    // const blockNumber =
-    //   block.status == BlockStatus.ACCEPTED_ON_L2 ||
-    //   block.status == BlockStatus.ACCEPTED_ON_L1
-    //     ? block.block_number
-    //     : this.pendingBlock;
+    const blockNumber =
+      block.status == BlockStatus.ACCEPTED_ON_L2 ||
+      block.status == BlockStatus.ACCEPTED_ON_L1
+        ? block.block_number
+        : this.pendingBlock;
 
-    const blockNumber = 241043;
+    //!todo check
+    // const blockNumber = 241043;
     this.logger.debug(
       `begin process block ${Number(blockNumber)} ${
         block.transactions.length
