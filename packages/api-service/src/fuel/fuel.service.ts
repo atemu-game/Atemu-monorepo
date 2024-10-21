@@ -50,6 +50,7 @@ export type WinnerParam = {
   cardContract: string;
   cardCollection: CardCollectionDocument;
   amountOfCards: number;
+  totalPoints: number;
 };
 
 @Injectable()
@@ -450,6 +451,7 @@ export class FuelService {
                 cardContract: cardCollection.cardContract,
                 cardCollection,
                 amountOfCards: 1,
+                totalPoints: this.totalStakedPoint,
               };
 
               await this.fuelPoolModel.findOneAndUpdate(

@@ -254,7 +254,11 @@ export class FuelService implements OnchainQueueService {
       { $set: history },
       { upsert: true },
     );
-
+    await this.fuelPoolModel.findOneAndUpdate(
+      { id: poolId, address: poolContract },
+      { $set: { isClaimed: true } },
+      { upsert: true },
+    );
     await this.fetchMetadataQueue.add(JOB_QUEUE_NFT_METADATA, existingCard._id);
   }
 }
