@@ -24,3 +24,5 @@ export enum TypeOfInviteCode {
   NORMAL = 'NORMAL',
   PARTNER = 'PARTNER',
 }
+
+export const AGEPOINT_PERDAY = 3;
