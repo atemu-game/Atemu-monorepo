@@ -4,7 +4,7 @@ export enum EventType {
   TransferPoint = 'TransferPoint',
   CreatePool = 'CreatePool',
   JoiningPool = 'JoiningPool',
-  ClaimRewards = 'ClaimRewards',
+  ClaimReward = 'ClaimReward',
   MintCard = 'MintCard',
   BurnCard = 'BurnCard',
   TransferCard = 'TransferCard',

@@ -50,6 +50,7 @@ export type WinnerParam = {
   cardContract: string;
   cardCollection: CardCollectionDocument;
   amountOfCards: number;
+  totalPoints: number;
 };
 
 @Injectable()
@@ -346,12 +347,12 @@ export class FuelService {
       },
       primaryType: 'WinnerStruct',
       domain: {
-        name: 'atemu',
+        name: 'Fuel',
         version: '1',
         chainId: shortString.encodeShortString(configuration().CHAIN_ID),
       },
       message: {
-        poolId: uint256.bnToUint256(1),
+        poolId: uint256.bnToUint256(poolId),
         winner: user,
         cardId: uint256.bnToUint256(1),
         amountCards: uint256.bnToUint256(1),
@@ -429,9 +430,17 @@ export class FuelService {
         let isCreateFinished = false;
         while (!isCreateFinished) {
           try {
+            const provider = new RpcProvider({
+              nodeUrl: this.chainDocument.rpc,
+            });
+            const now = await this.web3Service.getBlockTime(
+              this.chainDocument.rpc,
+            );
+
             if (
               this.currentJoinedPool.length >= 3 &&
-              !this.currentPool.winner
+              !this.currentPool.winner &&
+              now >= this.currentPool.endAt
             ) {
               const winner = this.setWinner();
 
@@ -442,6 +451,7 @@ export class FuelService {
                 cardContract: cardCollection.cardContract,
                 cardCollection,
                 amountOfCards: 1,
+                totalPoints: this.totalStakedPoint,
               };
 
               await this.fuelPoolModel.findOneAndUpdate(
@@ -461,9 +471,7 @@ export class FuelService {
               this.currentPool.winner = winner;
               console.log(winner);
             }
-            const provider = new RpcProvider({
-              nodeUrl: this.chainDocument.rpc,
-            });
+
             const drawerAccount = new Account(
               provider,
               configuration().ACCOUNT_ADDRESS,

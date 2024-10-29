@@ -19,6 +19,7 @@ export const decodeAddPoints = (
   const parsedEvent =
     contract.parseEvents(txReceipt)[0]['atemu::point::point::Point::AddPoint'];
 
+  console.log('Parsed Event: ', parsedEvent.point.toString());
   const returnValues: CreatePointReturnValues = {
     reciver: formattedContractAddress(
       num.toHex(parsedEvent.user as BigNumberish),
@@ -145,7 +146,6 @@ export const decodeClaimRewards = (
 
   const parsedEvent =
     contract.parseEvents(txReceipt)[0]['atemu::fuel::fuel::Fuel::ClaimReward'];
-  console.log(parsedEvent);
 
   const returnValue: ClaimRewardsReturnValue = {
     poolId: Number((parsedEvent.poolId as bigint).toString()),

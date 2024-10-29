@@ -1,57 +1,93 @@
 version: '3.8'
 
 volumes:
-  redis-data:
-  node_modules: {}
+  ode_modules: {}
   mongo_data: {}
   mongo_log: {}
 
-     
 networks:
   app-network:
     driver: bridge
 
 services:
   redis-atemu:
+    container_name: redis-atemu
     image: redis:alpine
     ports:
       - "6379:6379"
     volumes:
-      - redis-data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+      - ./redis_data:/data
+    command: redis-server /usr/local/etc/redis/redis.conf
     networks:
       - app-network
-
-  mongo-atemu:
-    image: mongo:7.0.14
     restart: always
+
+
+  mongo:
+    image: mongo:7.0.14
+    container_name: mongo_atemu
+    networks:
+      - app-network
     environment:
       - HOST=mongo
     volumes:
       - mongo_data:/data/db
       - mongo_log:/data/log
-    networks:
-      - app-network
     ports:
-      - 27017:27017
-    
-    
-  atemu-service:
+      - "27019:27017"
+   
+
+  onchain-worker:
+    container_name: onchain-worker
     build:
       context: .
+      args:
+        PKG: 'onchain-worker'
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"         # API_PORT
-      - "5050:5050"        # BLIZT_GATEWAY_PORT
-      - "5051:5051"        # FUEL_GATEWAY_PORT
-      - "8089:8089"        # ONCHAIN_QUEUE_PORT
-      - "8090:8090"        # ONCHAIN_WORKER_PORT
-      - "8091:8091"        # OFFCHAIN_WORKER_PORT
-    depends_on:
-      - redis-atemu
+    networks:
+      - app-network
     env_file:
-      - .env # Load environment variables from .env file
+      - .env
+    restart: always
+    depends_on:
+      - mongo
+      - redis-atemu
+   
+
+  onchain-queue:
+    container_name: onchain-queue
+    build:
+      context: .
+      args:
+        PKG: 'onchain-queue'
+      dockerfile: Dockerfile
+    networks:
+      - app-network
+    env_file:
+      - .env
+    restart: always
+    depends_on:
+      - mongo
+      - redis-atemu
+    
+   
+  atemu-service:
+    container_name: atemu-service
+    build:
+      context: .
+      args:
+        PKG: 'api-service'
+      dockerfile: Dockerfile
+    env_file:
+      - .env
     volumes:
       - .:/app
+    ports:
+      - "8000:8000"
+      - "5050:5050"
+      - "5051:5051"
+
     networks:
       - app-network
 

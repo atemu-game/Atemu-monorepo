@@ -19,6 +19,8 @@ export class BlockedQueue<T> {
   put(item: T): void {
     if (this._queue.length >= this._maxSize) {
       throw new Error('BlockedQueue exceed max size');
+      // console.log('BlockedQueue exceed max size');
+      // return;
     }
     this._queue.push(item);
   }
@@ -26,6 +28,8 @@ export class BlockedQueue<T> {
   putAll(items: T[]): void {
     if (this._queue.length + items.length > this._maxSize) {
       throw new Error('BlockedQueue exceed max size');
+      // console.log('BlockedQueue exceed max size');
+      // return;
     }
     this._queue.push(...items);
   }

@@ -51,7 +51,8 @@ export class Web3Service {
       chain.rpc,
     );
     const point = await contractInstance.getUserPoint(userAddress);
-    return point;
+
+    return Number(point as bigint);
   }
 
   async getPoolDetail(
@@ -88,6 +89,7 @@ export class Web3Service {
           ...txReceipt,
           events: txReceipt.events.filter((ev) => ev == event),
         };
+
         if (
           event.keys.includes(EventTopic.ADD_POINT) &&
           chain.bliztContractAdress ==
@@ -157,7 +159,7 @@ export class Web3Service {
         ) {
           eventWithTypes.push({
             ...txReceiptFilter,
-            eventType: EventType.ClaimRewards,
+            eventType: EventType.ClaimReward,
             returnValues: decodeClaimRewards(
               txReceiptFilter,
               provider,
@@ -242,7 +244,7 @@ export class Web3Service {
   ): Promise<string> {
     const provider = this.getProvider(rpc);
 
-    let abi = ABIS.CardsABI;
+    const abi = ABIS.CardsABI;
 
     const contractInstance = new Contract(abi, address, provider);
 

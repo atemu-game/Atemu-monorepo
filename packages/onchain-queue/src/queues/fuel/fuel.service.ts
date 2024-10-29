@@ -56,7 +56,7 @@ export class FuelService implements OnchainQueueService {
 
     process[EventType.CreatePool] = this.processCreatePoolEv;
     process[EventType.JoiningPool] = this.processJoinPoolEv;
-    process[EventType.ClaimRewards] = this.processClaimRewardEv;
+    process[EventType.ClaimReward] = this.processClaimRewardEv;
 
     await process[log.eventType].call(this, log, chain);
   }
@@ -188,6 +188,7 @@ export class FuelService implements OnchainQueueService {
       timestamp,
     } = log.returnValues as ClaimRewardsReturnValue;
 
+    console.log('ClaimReward', log.returnValues);
     const poolDocument = await this.getOrCreatePool(
       poolId,
       poolContract,
@@ -253,7 +254,11 @@ export class FuelService implements OnchainQueueService {
       { $set: history },
       { upsert: true },
     );
-
+    await this.fuelPoolModel.findOneAndUpdate(
+      { id: poolId, address: poolContract },
+      { $set: { isClaimed: true } },
+      { upsert: true },
+    );
     await this.fetchMetadataQueue.add(JOB_QUEUE_NFT_METADATA, existingCard._id);
   }
 }

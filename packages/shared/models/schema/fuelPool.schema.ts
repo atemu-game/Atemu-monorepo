@@ -31,6 +31,8 @@ export class FuelPool extends BaseSchema {
 
   @Prop()
   amountOfCards?: number;
+  @Prop()
+  totalPoints?: number;
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'CardCollections' })
   cardCollection?: CardCollectionDocument;

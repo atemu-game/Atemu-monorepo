@@ -161,7 +161,7 @@ export class BlockDetectService extends OnchainWorker {
       );
     }
 
-    const batchProcess = 10;
+    const batchProcess = 100;
     const maxRetry = 10;
     //batch process 10 txs, max retry 10 times
     await arraySliceProcess(
@@ -219,7 +219,7 @@ export class BlockDetectService extends OnchainWorker {
       );
 
       const matchClaimRewardEv = eventWithType.filter(
-        (ev) => ev.eventType === EventType.ClaimRewards,
+        (ev) => ev.eventType === EventType.ClaimReward,
       );
 
       const matchJoinFuelPool = eventWithType.filter(
@@ -267,7 +267,7 @@ export class BlockDetectService extends OnchainWorker {
             queue = this.joinFuelPoolQueue;
             jobName = ONCHAIN_JOB.JOB_JOIN_POOL;
             break;
-          case EventType.ClaimRewards:
+          case EventType.ClaimReward:
             queue = this.claimFuelRewardQueue;
             jobName = ONCHAIN_JOB.JOB_CLAIM_FUEL_REWARD;
             break;
