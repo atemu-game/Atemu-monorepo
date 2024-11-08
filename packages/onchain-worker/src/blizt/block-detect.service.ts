@@ -207,7 +207,6 @@ export class BlockDetectService extends OnchainWorker {
       const trasactionReceipt =
         await this.provider.getTransactionReceipt(txHash);
       if (!trasactionReceipt) {
-        // throw new Error(`Can not get transaction receipt ${txHash}`);
         return undefined;
       }
 

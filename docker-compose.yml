@@ -14,11 +14,13 @@ services:
     container_name: redis-atemu
     image: redis:alpine
     ports:
-      - "6379:6379"
+      - 6380:6379
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf
       - ./redis_data:/data
     command: redis-server /usr/local/etc/redis/redis.conf
+    environment:
+      - HOST=redis
     networks:
       - app-network
     restart: always
@@ -35,11 +37,11 @@ services:
       - mongo_data:/data/db
       - mongo_log:/data/log
     ports:
-      - "27019:27017"
+      - 27018:27017
    
 
   onchain-worker:
-    container_name: onchain-worker
+    container_name: onchain-worker-atemu
     build:
       context: .
       args:
@@ -50,13 +52,16 @@ services:
     env_file:
       - .env
     restart: always
+    ports:
+      - 8090:8090
     depends_on:
       - mongo
       - redis-atemu
+
    
 
   onchain-queue:
-    container_name: onchain-queue
+    container_name: onchain-queue-atemu
     build:
       context: .
       args:
@@ -67,13 +72,15 @@ services:
     env_file:
       - .env
     restart: always
+    ports:
+      - 8089:8089
     depends_on:
       - mongo
       - redis-atemu
     
    
   atemu-service:
-    container_name: atemu-service
+    container_name: api-service-atemu
     build:
       context: .
       args:
@@ -84,10 +91,9 @@ services:
     volumes:
       - .:/app
     ports:
-      - "8000:8000"
-      - "5050:5050"
-      - "5051:5051"
-
+    - 8080:8080
+    - 5050:5050
+    - 5051:5051
     networks:
       - app-network
 
