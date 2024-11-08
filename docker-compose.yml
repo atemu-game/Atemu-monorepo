@@ -91,7 +91,7 @@ services:
     volumes:
       - .:/app
     ports:
-    - 8080:8080
+    - 8000:8000
     - 5050:5050
     - 5051:5051
     networks:
