@@ -1,11 +1,10 @@
 
-FROM node:20 as prod-lib
+FROM node:18-alpine3.18 as prod-lib
 WORKDIR /app
 COPY package.json package.json
 COPY yarn.lock yarn.lock
 
 COPY packages/api-service/package.json packages/api-service/package.json
-COPY packages/offchain-worker/package.json packages/offchain-worker/package.json
 COPY packages/onchain-worker/package.json packages/onchain-worker/package.json
 COPY packages/onchain-queue/package.json packages/onchain-queue/package.json
 COPY packages/shared/package.json packages/shared/package.json
@@ -14,13 +13,11 @@ COPY packages/web3/package.json packages/web3/package.json
 RUN yarn install --production  --ignore-scripts --prefer-offline
 
 
-FROM node:20 as dev-lib
+FROM node:18-alpine3.18 as dev-lib
 WORKDIR /app
 COPY package.json package.json
 COPY yarn.lock yarn.lock
-
 COPY packages/api-service/package.json packages/api-service/package.json
-COPY packages/offchain-worker/package.json packages/offchain-worker/package.json
 COPY packages/onchain-worker/package.json packages/onchain-worker/package.json
 COPY packages/onchain-queue/package.json packages/onchain-queue/package.json
 COPY packages/shared/package.json packages/shared/package.json
@@ -46,7 +43,6 @@ RUN find packages/${PKG}/dist -name '*.map' -type f -delete
 RUN chown -R node:node /app
 USER node  
 
-EXPOSE 8000 5050 5051 8089 8090 8091
-
 ENV main=packages/${PKG}/dist/${PKG}/src/main.js
 CMD node $main
+

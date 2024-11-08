@@ -11,6 +11,7 @@ import { BliztModule } from './blizt/blizt.module';
 import { SystemModule } from './system/system.module';
 import { LeadboardModule } from './leaderboard/leaderboard.module';
 import { FuelModule } from './fuel/fuel.module';
+import { ClaimPointModule } from './claimPoint/claimPoint.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { FuelModule } from './fuel/fuel.module';
     FuelModule,
     SystemModule,
     LeadboardModule,
+    ClaimPointModule,
     MongooseModule.forRoot(configuration().DB_PATH),
   ],
   controllers: [],

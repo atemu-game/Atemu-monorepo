@@ -9,8 +9,6 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "yarn workspaces run build",
-    "run:redis": "docker run --name redis -p 6379:6379 -d redis",
-    "run:redis:stop": "docker stop redis"
+    "build": "yarn workspaces run build"
   }
 }

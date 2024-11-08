@@ -9,3 +9,4 @@ export * from './fuelPool.schema';
 export * from './joinFuelPool.schema';
 export * from './card.schema';
 export * from './cardCollection.schema';
+export * from './claimPoint.schema';

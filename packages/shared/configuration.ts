@@ -9,6 +9,7 @@ export default () => ({
   DB_PATH: String(process.env.DB_PATH),
   // API Port
   API_PORT: Number(process.env.API_PORT) || 8000,
+  API_AGE_WALLET_URL: String(process.env.API_AGE_WALLET),
   BLIZT_GATEWAY_PORT: Number(process.env.BLIZT_GATEWAY_PORT) || 5050,
   FUEL_GATEWAY_PORT: Number(process.env.FUEL_GATEWAY_PORT) || 5051,
   // ONCHAIN Setup
